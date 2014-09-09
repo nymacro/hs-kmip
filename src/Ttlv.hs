@@ -468,7 +468,7 @@ decodeTtlv = runGet parseTtlv
 
 
 encodeTtlv :: Ttlv -> L.ByteString
-encodeTtlv = runPut unparseTtlv
+encodeTtlv = undefined
   
 test :: IO ()
 test = do
