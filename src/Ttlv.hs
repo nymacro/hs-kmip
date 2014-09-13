@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ttlv ( encodeTtlv
-            , decodeTtlv) where
+            , decodeTtlv
+            , Ttlv
+            , TtlvData
+            , TtlvTag ) where
 
+import Control.Applicative
 import Control.Monad
 import System.IO.Unsafe (unsafePerformIO)
 import Debug.Trace
@@ -11,6 +15,7 @@ import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy as L
 import System.Locale
 import Data.Time
+import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time.Format (parseTime)
 import Data.Binary
@@ -19,10 +24,11 @@ import Data.Binary.Put
 import Data.Word
 import qualified Data.ByteString.Base16 as B16
 import Numeric (showHex)
-import qualified Data.ByteString.Internal as BS (w2c)
+import qualified Data.ByteString.Internal as BS (w2c, c2w)
 import Test.Hspec
 import Data.Maybe
 
+-- | Tag identifier
 data TtlvTag = TtlvActivationDate
              | TtlvApplicationData
              | TtlvApplicationNamespace
@@ -254,17 +260,18 @@ ttlvTagVersion' x | x >= 0x420001 && x <= 0x4200A1 = TtlvVersion 1 0
 ttlvTagVersion :: TtlvTag -> TtlvVersion
 ttlvTagVersion = ttlvTagVersion' . fromTtlvTag
 
-    
 data TtlvVersion = TtlvVersion Int Int deriving (Show, Eq)
 -- ttlvTagVersion :: TtlvTag -> TtlvVersion
 
+-- | Data type representing Ttlv-encoding of KMIP message
 data Ttlv = Ttlv TtlvTag TtlvData
             deriving (Show, Eq)
 
 instance Binary Ttlv where
   get = parseTtlv
-  put = undefined
+  put = unparseTtlv
 
+-- | Tag data
 data TtlvData = TtlvStructure [Ttlv]
               | TtlvInt Int
               | TtlvLongInt Integer
@@ -277,37 +284,11 @@ data TtlvData = TtlvStructure [Ttlv]
               | TtlvInterval Int
               deriving (Show, Eq)
 
-toId :: TtlvData -> Int
-toId x = case x of
-           (TtlvStructure _) -> 1
-           (TtlvInt _) -> 2
-           (TtlvLongInt _) -> 3
-           (TtlvBigInt _) -> 4
-           (TtlvEnum _) -> 5
-           (TtlvBool _) -> 6
-           (TtlvString _) -> 7
-           (TtlvByteString _) -> 8
-           (TtlvDateTime _) -> 9
-           (TtlvInterval _) -> 10
-
--- fromId :: Int -> TtlvData
--- fromId x = case x of
---              1 -> TtlvStructure
---              2 -> TtlvInt
---              3 -> TtlvLongInt
---              4 -> TtlvBigInt
---              5 -> TtlvEnum
---              6 -> TtlvBool
---              7 -> TtlvString
---              8 -> TtlvByteString
---              9 -> TtlvDateTime
---              10 -> TtlvInterval
-
 parseTtlvStructure' :: Get [Ttlv]
 parseTtlvStructure' = do
   ttlv <- parseTtlv
-  rem <- remaining
-  if rem == 0
+  rema <- remaining
+  if rema == 0
   then return [ttlv]
   else do
     rest <- parseTtlvStructure'
@@ -416,8 +397,8 @@ ttlvDataLength (TtlvLongInt _) = 8
 ttlvDataLength (TtlvBigInt _) = undefined
 ttlvDataLength (TtlvEnum _) = 8 -- w/padding
 ttlvDataLength (TtlvBool _) = 8
-ttlvDataLength (TtlvString _) = undefined
-ttlvDataLength (TtlvByteString _) = undefined
+ttlvDataLength (TtlvString x) = length x
+ttlvDataLength (TtlvByteString x) = fromIntegral $ L.length x
 ttlvDataLength (TtlvDateTime _) = 8
 ttlvDataLength (TtlvInterval _) = 8 -- w/padding
 
@@ -430,22 +411,31 @@ unparseTtlvData (TtlvInt x) = do
   putWord32be $ fromIntegral x
   putWord32be 0
 unparseTtlvData (TtlvLongInt x) = putWord64be $ fromIntegral x
--- unparseTtlvdata (TtlvBigInt x) = 
-unparseTtlvData (TtlvEnum x) = putWord64be $ fromIntegral x
+-- unparseTtlvdata (TtlvBigInt x) = fail "Undefined encode for Big Integer"
+unparseTtlvData (TtlvEnum x) = do
+  putWord32be $ fromIntegral x
+  putWord32be 0
 unparseTtlvData (TtlvBool x) = if x
                                then putWord64be 1
                                else putWord64be 0
--- unparseTtlvData (TtlvString x) = undefined
--- unparseTtlvData (TtlvByteString x) = undefined
--- unparseTtlvData (TtlvDateTime x) = undefined
--- unpraseTtlvData (TtlvInterval x) = undefined
+unparseTtlvData (TtlvString x) = putLazyByteString $ L.pack $ map BS.c2w x 
+unparseTtlvData (TtlvByteString x) = putLazyByteString x
+unparseTtlvData (TtlvDateTime x) = putWord64be $ fromIntegral $ round $ utcTimeToPOSIXSeconds x
+unparseTtlvData (TtlvInterval x) = do
+  putWord32be $ fromIntegral x
+  putWord32be 0
 
 unparseTtlv :: Ttlv -> Put
 unparseTtlv (Ttlv t d) = do
   putLazyByteString $ encodeTtlvTag $ fromTtlvTag t
   putWord8 $ fromIntegral $ ttlvDataType d
-  putWord32be $ fromIntegral $ ttlvDataLength $ d
---  putLazyByteString $ unparseTtlvData d
+  -- this is terrible. Find a better way to do this
+  let length = ttlvDataLength d
+      real_length = if ttlvDataType d `elem` [2, 5, 10]
+                    then length - 4
+                    else length
+  putWord32be $ fromIntegral $ real_length
+  unparseTtlvData d
 
 fromHex x = L.fromChunks [fst $ B16.decode x]
 
@@ -468,13 +458,44 @@ decodeTtlv = runGet parseTtlv
 
 
 encodeTtlv :: Ttlv -> L.ByteString
-encodeTtlv = undefined
+encodeTtlv x = runPut $ unparseTtlv x
   
 test :: IO ()
 test = do
   hspec $ do
     describe "Ttlv" $ do
       describe "Examples" $ do
+        describe "Encode" $ do
+          it "should encode/decode Integer" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvInt 8))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Long Integer" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvLongInt 123456789000000000))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Big Integer" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvBigInt 1234567890000000000000000000))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Enumeration" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvEnum 255))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Boolean" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvBool True))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode String" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvString "Hello World"))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode ByteString" $ do
+            pending
+          it "should encode/decode DateTime" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvString "Hello World"))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Interval" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvInterval 864000))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Structure" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvStructure [Ttlv TtlvApplicationSpecificInformation (TtlvEnum 254),Ttlv TtlvArchiveDate (TtlvInt 255)]))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
+            
         describe "Decode" $ do
           it "should decode Integer" $ do
             decodeTtlv (testTtlvs !! 0) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvInt 8))
