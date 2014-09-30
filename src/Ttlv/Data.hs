@@ -23,4 +23,3 @@ data TtlvData = TtlvStructure [Ttlv]
               | TtlvDateTime UTCTime
               | TtlvInterval Int
               deriving (Show, Eq)
-
