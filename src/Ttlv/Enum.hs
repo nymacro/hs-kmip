@@ -18,21 +18,21 @@ class Enum a => TtlvEnumType a where
   fromTtlvEnumType (TtlvEnum x) = toTtlvEnum x
   fromTtlvEnumType _ = undefined
 
+  ttlvEnumTag :: a -> TtlvTag
+
 data CredentialType = UsernameAndPassword
                     deriving (Show, Eq, Enum)
-instance TtlvEnumType CredentialType
+instance TtlvEnumType CredentialType where
+  ttlvEnumTag _ = TtlvCredentialType
 
 data KeyCompressionType = ECPubKeyUncompressed
                         | ECPubKeyCompressedPrime
                         | ECPubKeyCompressedChar2
                         | ECPubKeyHybrid
                         deriving (Show, Eq, Enum)
-instance TtlvEnumType KeyCompressionType
+instance TtlvEnumType KeyCompressionType where
+  ttlvEnumTag _ = TtlvKeyCompressionType
 
--- toKeyCompressionType :: Int -> KeyCompressionType
--- toKeyCompressionType = toEnum . pred
--- fromKeyCompressionType :: KeyCompressionType -> Int
--- fromKeyCompressionType = succ . fromEnum
 
 data KeyFormatType = Raw
                    | Opaque
@@ -54,12 +54,8 @@ data KeyFormatType = Raw
                    | ECMQVPrivateKey
                    | ECMQVPublicKey
                    deriving (Show, Eq, Enum)
-instance TtlvEnumType KeyFormatType
-
--- toKeyFormatType :: Int -> KeyFormatType
--- toKeyFormatType = toEnum . pred
--- fromKeyFormatType :: KeyFormatType -> Int
--- fromKeyFormatType = succ . fromEnum
+instance TtlvEnumType KeyFormatType where
+  ttlvEnumTag _ = TtlvKeyFormatType
 
 
 data WrappingMethod = Encrypt
@@ -68,12 +64,9 @@ data WrappingMethod = Encrypt
                     | MACSignEncrypt
                     | TR31
                     deriving (Show, Eq, Enum)
-instance TtlvEnumType WrappingMethod
+instance TtlvEnumType WrappingMethod where
+  ttlvEnumTag _ = TtlvWrappingMethod
 
--- toWrappingMethod :: Int -> WrappingMethod
--- toWrappingMethod = toEnum . pred
--- fromWrappingMethod :: WrappingMethod -> Int
--- fromWrappingMethod = succ . fromEnum
 
 data RecommendedCurve = P192 
                       | K163 
@@ -91,57 +84,37 @@ data RecommendedCurve = P192
                       | K571 
                       | B571 
                       deriving (Show, Eq, Enum)
-instance TtlvEnumType RecommendedCurve
+instance TtlvEnumType RecommendedCurve where
+  ttlvEnumTag _ = TtlvRecommendedCurve
 
--- toRecommendedCurve :: Int -> RecommendedCurve
--- toRecommendedCurve = toEnum . pred
--- fromRecommendedCurve :: RecommendedCurve -> Int
--- fromRecommendedCurve = succ . fromEnum
 
 data CertificateType = CertX509
                      | CertPGP
                      deriving (Show, Eq, Enum)
-instance TtlvEnumType CertificateType
-
--- toCertificateType :: Int -> CertificateType
--- toCertificateType = toEnum . pred
--- fromCertificateType :: CertificateType -> Int
--- fromCertificateType = succ . fromEnum
+instance TtlvEnumType CertificateType where
+  ttlvEnumTag _ = TtlvCertificateType
 
 
-data SplitMethod = XOR
+data SplitKeyMethod = XOR
                  | PolynomialSharingGF
                  | PolynomialSharingPrimeField
                  deriving (Show, Eq, Enum)
-instance TtlvEnumType SplitMethod
-
--- toSplitMethod :: Int -> SplitMethod
--- toSplitMethod = toEnum . pred
--- fromSplitMethod :: SplitMethod -> Int
--- fromSplitMethod = succ . fromEnum
+instance TtlvEnumType SplitKeyMethod where
+  ttlvEnumTag _ = TtlvSplitKeyMethod
 
 
 data SecretDataType = Password
                     | Seed
                     deriving (Show, Eq, Enum)
-instance TtlvEnumType SecretDataType
+instance TtlvEnumType SecretDataType where
+  ttlvEnumTag _ = TtlvSecretDataType
 
--- toSecretDataType :: Int -> SecretDataType
--- toSecretDataType = toEnum . pred
--- fromSecretDataType :: SecretDataType -> Int
--- fromSecretDataType = succ . fromEnum
-
--- data OpaqueDataType = undefined
 
 data NameType = UninterpretedTextString
               | URI
               deriving (Show, Eq, Enum)
-instance TtlvEnumType NameType
-
--- toNameType :: Int -> NameType
--- toNameType = toEnum . pred
--- fromNameType :: NameType -> Int
--- fromNameType = succ . fromEnum
+instance TtlvEnumType NameType where
+  ttlvEnumTag _ = TtlvNameType
 
 
 data ObjectType = Certificate
@@ -153,12 +126,8 @@ data ObjectType = Certificate
                 | SecretData
                 | OpaqueObject
                 deriving (Show, Eq, Enum)
-instance TtlvEnumType ObjectType
-
--- toObjectType :: Int -> ObjectType
--- toObjectType = toEnum . pred
--- fromObjectType :: ObjectType -> Int
--- fromObjectType = succ . fromEnum
+instance TtlvEnumType ObjectType where
+  ttlvEnumTag _ = TtlvObjectType
 
 
 data CryptoAlgorithm = DES
@@ -187,12 +156,8 @@ data CryptoAlgorithm = DES
                      | SKIPJACK
                      | Twofish
                      deriving (Show, Eq, Enum)
-instance TtlvEnumType CryptoAlgorithm
-
--- toCryptoAlgorithm :: Int -> CryptoAlgorithm
--- toCryptoAlgorithm = toEnum . pred
--- fromCryptoAlgorithm :: CryptoAlgorithm -> Int
--- fromCryptoAlgorithm = succ . fromEnum
+instance TtlvEnumType CryptoAlgorithm where
+  ttlvEnumTag _ = TtlvCryptographicAlgorithm
 
 
 data BlockCipherMode = CBC 
@@ -213,12 +178,8 @@ data BlockCipherMode = CBC
                      | X9102AKW1 
                      | X9102AKW2 
                      deriving (Show, Eq, Enum)
-instance TtlvEnumType BlockCipherMode
-
--- toBlockCipherMode :: Int -> BlockCipherMode
--- toBlockCipherMode = toEnum . pred
--- fromBlockCipherMode :: BlockCipherMode -> Int
--- fromBlockCipherMode = succ . fromEnum
+instance TtlvEnumType BlockCipherMode where
+  ttlvEnumTag _ = TtlvBlockCipherMode
 
 
 data PaddingMethod = None 
@@ -232,12 +193,8 @@ data PaddingMethod = None
                    | X931 
                    | PSS
                    deriving (Show, Eq, Enum)
-instance TtlvEnumType PaddingMethod
-
--- toPaddingMethod :: Int -> PaddingMethod
--- toPaddingMethod = toEnum . pred
--- fromPaddingMethod :: PaddingMethod -> Int
--- fromPaddingMethod = succ . fromEnum
+instance TtlvEnumType PaddingMethod where
+  ttlvEnumTag _ = TtlvPaddingMethod
 
 
 test :: IO ()
@@ -247,5 +204,3 @@ test = do
       it "should convert between KeyCompressionType" $ do
         (toTtlvEnum 1 :: KeyCompressionType) `shouldBe` ECPubKeyUncompressed
         fromTtlvEnum ECPubKeyUncompressed `shouldBe` 1
-        -- toKeyCompressionType 1 `shouldBe` ECPubKeyUncompressed
-        -- fromKeyCompressionType ECPubKeyUncompressed `shouldBe` 1
