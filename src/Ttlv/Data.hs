@@ -3,8 +3,6 @@ module Ttlv.Data where
 import Ttlv.Tag
 
 import Data.Time
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy as L
 
 -- | Data type representing Ttlv-encoding of KMIP message
@@ -22,4 +20,5 @@ data TtlvData = TtlvStructure [Ttlv]
               | TtlvByteString L.ByteString
               | TtlvDateTime UTCTime
               | TtlvInterval Int
+              | TtlvRepeated [TtlvData] -- TODO
               deriving (Show, Eq)

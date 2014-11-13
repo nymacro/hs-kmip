@@ -1,23 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ttlv.Parser ( encodeTtlv
-                   , decodeTtlv) where
+                   , decodeTtlv ) where
 
 import Data.Binary
 import Data.Binary.Get
 import Data.Binary.Put
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as BC
+-- import qualified Data.ByteString as B
+-- import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Internal as BS (w2c, c2w)
 import qualified Data.ByteString.Base16 as B16
 import qualified Crypto.Number.Serialize as CN (os2ip, i2osp, i2ospOf_, lengthBytes)
 import System.Locale
 import Data.Time
-import Data.Time.Clock
+-- import Data.Time.Clock
 import Data.Time.Clock.POSIX
-import Data.Time.Format (parseTime)
+-- import Data.Time.Format (parseTime)
 import Data.Maybe
-import Data.Word
+-- import Data.Word
 import Numeric (showHex)
 import Control.Applicative
 import Control.Monad
@@ -26,7 +26,7 @@ import Test.Hspec
 
 import Ttlv.Tag
 import Ttlv.Data
-import qualified Ttlv.Enum
+import qualified Ttlv.Enum as E
 
 instance Binary Ttlv where
   get = parseTtlv
@@ -236,6 +236,9 @@ test = do
           it "should encode/decode Big Integer" $ do
             let t = (Ttlv TtlvCompromiseDate (TtlvBigInt 1234567890000000000000000000))
             (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          it "should encode/decode Big Integer" $ do
+            let t = (Ttlv TtlvCompromiseDate (TtlvBigInt (-1)))
+            (decodeTtlv $ encodeTtlv t) `shouldBe` t
           it "should encode/decode Enumeration" $ do
             let t = (Ttlv TtlvCompromiseDate (TtlvEnum 255))
             (decodeTtlv $ encodeTtlv t) `shouldBe` t
@@ -291,4 +294,3 @@ test = do
 main :: IO ()
 main = do
   mapM_ (putStrLn . show . decodeTtlv) testTtlvs
-
