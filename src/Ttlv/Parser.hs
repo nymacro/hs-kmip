@@ -136,6 +136,7 @@ ttlvDataType (TtlvString _) = 7
 ttlvDataType (TtlvByteString _) = 8
 ttlvDataType (TtlvDateTime _) = 9
 ttlvDataType (TtlvInterval _) = 10
+-- ttlvDataType (TtlvRepeated x) = ttlvDataType $ head x
 
 ttlvDataLength :: TtlvData -> Int
 ttlvDataLength (TtlvStructure x) = foldr1 (+) $ map ttlvLength x
@@ -149,6 +150,7 @@ ttlvDataLength (TtlvString x) = length x
 ttlvDataLength (TtlvByteString x) = fromIntegral $ L.length x
 ttlvDataLength (TtlvDateTime _) = 8
 ttlvDataLength (TtlvInterval _) = 8 -- w/padding
+-- ttlvDataLength (TtlvRepeated x) = foldr1 (+) $ map ttlvDataLength x
 
 ttlvLength :: Ttlv -> Int
 ttlvLength (Ttlv t d) = 3 + 1 + 4 + (ttlvDataLength d)
@@ -184,6 +186,7 @@ unparseTtlv (Ttlv t d) = do
                     else length
   putWord32be $ fromIntegral $ real_length
   unparseTtlvData d
+
 
 protocolVersion :: Int -> Int -> Ttlv
 protocolVersion major minor = Ttlv TtlvProtocolVersion (TtlvStructure [ Ttlv TtlvProtocolVersionMajor (TtlvInt major)

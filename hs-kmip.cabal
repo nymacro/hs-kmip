@@ -19,6 +19,6 @@ library
   exposed-modules:     Ttlv, Kmip, Ttlv.Tag, Ttlv.Enum, Ttlv.Data
   -- other-modules:       
   other-extensions:    OverloadedStrings
-  build-depends:       base >=4.7 && <4.8, bytestring >=0.10 && <0.11, old-locale >=1.0 && <1.1, time >=1.4 && <1.5, binary >=0.7 && <0.8, crypto-numbers >= 0.2.3, hspec >= 1.11.4, base16-bytestring >= 0.1.1.6, tls >= 0.0
+  build-depends:       base >=4.7 && <4.8, bytestring >=0.10 && <0.11, old-locale >=1.0 && <1.1, time >=1.4 && <1.5, binary >=0.7 && <0.8, crypto-numbers >= 0.2.3, hspec >= 1.11.4, base16-bytestring >= 0.1.1.6, tls >= 0.0, lens >= 0.0
   hs-source-dirs:      src
   default-language:    Haskell2010

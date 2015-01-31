@@ -7,4 +7,5 @@ import Network.TLS.Extra
 
 -- this will be stuff that uses Ttlv but implements actual KMIP protocol
 
-kmipValidate = undefined
+-- many :: TtlvTag -> Ttlv -> State Ttlv Bool
+-- many tag ttlv = 
