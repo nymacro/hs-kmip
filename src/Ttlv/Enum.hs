@@ -14,9 +14,9 @@ class Enum a => TtlvEnumType a where
   toTtlvEnumType :: a -> TtlvData
   toTtlvEnumType x = TtlvEnum $ fromTtlvEnum x
 
-  fromTtlvEnumType :: TtlvData -> a
-  fromTtlvEnumType (TtlvEnum x) = toTtlvEnum x
-  fromTtlvEnumType _ = undefined
+  fromTtlvEnumType :: TtlvData -> Maybe a
+  fromTtlvEnumType (TtlvEnum x) = Just $ toTtlvEnum x
+  fromTtlvEnumType _ = Nothing
 
   ttlvEnumTag :: a -> TtlvTag
 
