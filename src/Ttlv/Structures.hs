@@ -70,9 +70,23 @@ find :: TtlvTag -> TtlvParser Ttlv
 find tag = TtlvParser $ \t ->
   case (getTtlvData t) ^? _TtlvStructure of
     Nothing -> Left ["not a structure"]
-    Just s -> case L.find (\t' -> getTtlvTag t' == tag) s of
-      Just t' -> Right t'
-      Nothing -> Left ["unable to find tag " ++ show tag]
+    Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
+      [] -> Left ["unable to find tag " ++ show tag]
+      xs -> if length xs /= 1
+            then Left ["too many/too few"]
+            else Right $ head xs
+
+many :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
+many tag v = TtlvParser $ \t ->
+  case (getTtlvData t) ^? _TtlvStructure of
+    Nothing -> Left ["not a structure"]
+    Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
+      [] -> Left ["unable to find tag " ++ show tag]
+      xs -> if all (\x -> case x of
+                       Right t -> True
+                       Left _ -> False) $ map (runTtlvParser v) xs
+            then Right t
+            else Left ["not everything matched"]
 
 -- | on: Ttlv
 -- | check current Ttlv tag
@@ -158,6 +172,14 @@ attribute name vf = TtlvParser $ \t ->
       fn = tag TtlvAttribute <+> n <+> v <+> i
   in runTtlvParser fn t
 
+attribute_ :: TtlvParser Ttlv
+attribute_ = TtlvParser $ \t ->
+  let n  = apply    TtlvAttributeName ok
+      v  = apply    TtlvAttributeValue ok
+      i  = optional TtlvAttributeIndex integer
+      fn = tag TtlvAttribute <+> n <+> v <+> i
+  in runTtlvParser fn t
+
 -- | on: Structure
 -- | Check Credential object
 credential :: TtlvParser Ttlv
@@ -189,7 +211,7 @@ xx = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-
                                         , Ttlv TtlvAttributeIndex (TtlvInt 0)
                                         , Ttlv TtlvAttributeValue (TtlvString "hello world") ]))
 yy = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-yo")
-                                        , Ttlv TtlvAttributeIndex (TtlvInt 0)
+                                        , Ttlv TtlvAttributeIndex (TtlvInt 1)
                                         , Ttlv TtlvAttributeValue (TtlvString "sticker") ]))
 
 zz = Ttlv TtlvCredential (TtlvStructure [ Ttlv TtlvCredentialType (TtlvEnum $ TEnum.fromTtlvEnum TEnum.UsernameAndPassword)
@@ -215,6 +237,9 @@ test = hspec $ do
     it "should fail bad matches" $ do
       let x = apply TtlvAttributeName (stringEq "abc")
       runTtlvParser x xx `shouldBe` Left ["mismatch in expected value"]
+    it "should allow many" $ do
+      let xx' = (Ttlv TtlvAttribute (TtlvStructure [xx, yy]))
+      runTtlvParser (many TtlvAttribute attribute_) xx' `shouldBe` Right xx'
 
     describe "Objects" $ do
       describe "Attribute" $ do
