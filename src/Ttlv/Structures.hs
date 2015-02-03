@@ -76,8 +76,24 @@ find tag = TtlvParser $ \t ->
             then Left ["too many/too few"]
             else Right $ head xs
 
+-- | on: Ttlv
+-- | zero-many
 many :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many tag v = TtlvParser $ \t ->
+  case (getTtlvData t) ^? _TtlvStructure of
+    Nothing -> Left ["not a structure"]
+    Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
+      [] -> Right t
+      xs -> if all (\x -> case x of
+                       Right t -> True
+                       Left _ -> False) $ map (runTtlvParser v) xs
+            then Right t
+            else Left ["not everything matched"]
+
+-- | on: Ttlv
+-- | one-many
+many1 :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
+many1 tag v = TtlvParser $ \t ->
   case (getTtlvData t) ^? _TtlvStructure of
     Nothing -> Left ["not a structure"]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
@@ -113,13 +129,6 @@ stringEq s = TtlvParser $ \t -> case getTtlvData t of
 
 -- | on: Ttlv
 -- | check Ttlv data type
-integer :: TtlvParser Ttlv
-integer = TtlvParser $ \t -> case getTtlvData t of
-  TtlvInt _ -> Right t
-  otherwise -> Left ["not an integer"]
-
--- | on: Ttlv
--- | check Ttlv data type
 tstruct :: TtlvParser Ttlv
 tstruct = TtlvParser $ \t -> case getTtlvData t of
   TtlvStructure _ -> Right t
@@ -132,6 +141,40 @@ tenum = TtlvParser $ \t -> case getTtlvData t of
   TtlvEnum e -> Right t
   otherwise  -> Left ["not an enum"]
 
+tbytestring :: TtlvParser Ttlv
+tbytestring = TtlvParser $ \t -> case getTtlvData t of
+  TtlvByteString e -> Right t
+  otherwise  -> Left ["not a byte-string"]
+
+tstring :: TtlvParser Ttlv
+tstring = TtlvParser $ \t -> case getTtlvData t of
+  TtlvString e -> Right t
+  otherwise  -> Left ["not a string"]
+
+tbigint :: TtlvParser Ttlv
+tbigint = TtlvParser $ \t -> case getTtlvData t of
+  TtlvBigInt e -> Right t
+  otherwise  -> Left ["not a big int"]
+
+tint :: TtlvParser Ttlv
+tint = TtlvParser $ \t -> case getTtlvData t of
+  TtlvInt e -> Right t
+  otherwise  -> Left ["not an int"]
+
+tlong :: TtlvParser Ttlv
+tlong = TtlvParser $ \t -> case getTtlvData t of
+  TtlvLongInt e -> Right t
+  otherwise  -> Left ["not an int"]
+
+tinterval :: TtlvParser Ttlv
+tinterval = TtlvParser $ \t -> case getTtlvData t of
+  TtlvInterval e -> Right t
+  otherwise  -> Left ["not an int"]
+
+tdatetime :: TtlvParser Ttlv
+tdatetime = TtlvParser $ \t -> case getTtlvData t of
+  TtlvDateTime e -> Right t
+  otherwise  -> Left ["not an int"]
 
 -- | on: Structure
 -- | run `parser` on `tag`, returning original Ttlv
@@ -162,48 +205,148 @@ ok = TtlvParser $ \t -> Right t
 
 -- Objects
 
--- | on: Structure
--- | Check Attribute object
 attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
-attribute name vf = TtlvParser $ \t ->
-  let n  = apply    TtlvAttributeName (stringEq name)
-      v  = apply    TtlvAttributeValue vf
-      i  = optional TtlvAttributeIndex integer
-      fn = tag TtlvAttribute <+> n <+> v <+> i
-  in runTtlvParser fn t
+attribute name vf = tag TtlvAttribute <+>
+                    apply    TtlvAttributeName (stringEq name) <+>
+                    apply    TtlvAttributeValue vf <+>
+                    optional TtlvAttributeIndex tint
 
 attribute_ :: TtlvParser Ttlv
-attribute_ = TtlvParser $ \t ->
-  let n  = apply    TtlvAttributeName ok
-      v  = apply    TtlvAttributeValue ok
-      i  = optional TtlvAttributeIndex integer
-      fn = tag TtlvAttribute <+> n <+> v <+> i
-  in runTtlvParser fn t
+attribute_ = tag TtlvAttribute <+>
+             apply    TtlvAttributeName ok <+>
+             apply    TtlvAttributeValue ok <+>
+             optional TtlvAttributeIndex tint
 
--- | on: Structure
--- | Check Credential object
 credential :: TtlvParser Ttlv
-credential = TtlvParser $ \t ->
-  let typ = apply TtlvCredentialType tenum
-      val = apply TtlvCredentialValue credentialValue
-  in runTtlvParser (typ <+> val) t
+credential = tag TtlvCredential <+>
+             apply TtlvCredentialType tenum <+>
+             apply TtlvCredentialValue credentialValue
 
 credentialValue :: TtlvParser Ttlv
 credentialValue = apply TtlvUsername string <+> apply TtlvPassword string
 
 keyBlock :: TtlvParser Ttlv
-keyBlock = apply    TtlvKeyFormatType tenum <+>
+keyBlock = tag      TtlvKeyBlock <+>
+           apply    TtlvKeyFormatType tenum <+>
            optional TtlvKeyCompressionType tenum <+>
            apply    TtlvKeyValue keyValue <+>
            optional TtlvCryptographicAlgorithm tenum <+> -- FIXME
-           optional TtlvCryptographicLength integer <+>  -- FIXME
+           optional TtlvCryptographicLength tint <+>  -- FIXME
            optional TtlvKeyWrappingData tstruct -- FIXME
            
 keyValue :: TtlvParser Ttlv
-keyValue = apply    TtlvKeyMaterial ok <+>
-           optional TtlvAttribute ok -- FIXME
+keyValue = apply    TtlvKeyMaterial keyMaterial <+>
+           many     TtlvAttribute   attribute_
+
+keyWrappingData :: TtlvParser Ttlv
+keyWrappingData = --tag      TtlvWrappingData <+>
+                  apply    TtlvWrappingMethod tenum <+>
+                  optional TtlvEncryptionKeyInformation encryptionKeyInfo <+>
+                  optional TtlvMACSignatureKeyInformation macSignatureKeyInfo <+>
+                  optional TtlvMACSignature tbytestring <+>
+                  optional TtlvIVCounterNonce tbytestring
+
+encryptionKeyInfo :: TtlvParser Ttlv
+encryptionKeyInfo = apply    TtlvUniqueIdentifier tstring <+>
+                    optional TtlvCryptographicParameters tstruct
+
+macSignatureKeyInfo :: TtlvParser Ttlv
+macSignatureKeyInfo = apply    TtlvUniqueIdentifier tstring <+>
+                      optional TtlvCryptographicParameters tstruct
+
+
+keyWrappingSpec :: TtlvParser Ttlv
+keyWrappingSpec = apply    TtlvWrappingMethod tenum <+>
+                  optional TtlvEncryptionKeyInformation tstruct <+>
+                  optional TtlvMACSignatureKeyInformation tstruct <+>
+                  many     TtlvAttribute attribute_
+
+keyMaterial :: TtlvParser Ttlv
+keyMaterial = keyMaterialSymmetricKey <|>
+              keyMaterialDSAPrivateKey <|>
+              keyMaterialDSAPublicKey <|>
+              keyMaterialRSAPrivateKey <|>
+              keyMaterialRSAPublicKey
+
+keyMaterialSymmetricKey :: TtlvParser Ttlv
+keyMaterialSymmetricKey = apply TtlvKey tbytestring
+
+keyMaterialDSAPrivateKey :: TtlvParser Ttlv
+keyMaterialDSAPrivateKey = apply TtlvP tbigint <+>
+                           apply TtlvQ tbigint <+>
+                           apply TtlvG tbigint <+>
+                           apply TtlvX tbigint
+
+keyMaterialDSAPublicKey :: TtlvParser Ttlv
+keyMaterialDSAPublicKey = apply TtlvP tbigint <+>
+                          apply TtlvQ tbigint <+>
+                          apply TtlvG tbigint <+>
+                          apply TtlvY tbigint
+
+keyMaterialRSAPrivateKey :: TtlvParser Ttlv
+keyMaterialRSAPrivateKey = optional TtlvModulus tbigint <+>
+                           optional TtlvPrivateExponent tbigint <+>
+                           optional TtlvPublicExponent tbigint <+>
+                           optional TtlvP tbigint <+>
+                           optional TtlvQ tbigint <+>
+                           optional TtlvPrimeExponentP tbigint <+>
+                           optional TtlvPrimeExponentQ tbigint <+>
+                           optional TtlvCRTCoefficient tbigint
+
+keyMaterialRSAPublicKey :: TtlvParser Ttlv
+keyMaterialRSAPublicKey = apply TtlvModulus tbigint <+>
+                          apply TtlvPublicExponent tbigint
+
+-- TODO DH/ECDSA/ECDH/ECMQV key materials
+
+templateAttribute :: TtlvParser Ttlv
+templateAttribute = optional TtlvName tstruct <+>
+                    optional TtlvAttribute attribute_
+
 
 -- Managed Objects
+certificate :: TtlvParser Ttlv
+certificate = tag   TtlvCertificate <+>
+              apply TtlvCertificateType tenum <+>
+              apply TtlvCertificateValue tbytestring
+
+-- TODO fix key block expectations
+symmetricKey :: TtlvParser Ttlv
+symmetricKey = tag   TtlvSymmetricKey <+>
+               apply TtlvKeyBlock keyBlock
+
+publicKey :: TtlvParser Ttlv
+publicKey = tag   TtlvPublicKey <+>
+            apply TtlvKeyBlock keyBlock
+
+privateKey :: TtlvParser Ttlv
+privateKey = tag   TtlvPrivateKey <+>
+             apply TtlvKeyBlock keyBlock
+
+splitKey :: TtlvParser Ttlv
+splitKey = tag   TtlvSplitKey <+>
+           apply TtlvSplitKeyParts tint <+>
+           apply TtlvKeyPartIdentifier tint <+>
+           apply TtlvSplitKeyThreshold tint <+>
+           apply TtlvSplitKeyMethod tenum <+>
+           apply TtlvPrimeFieldSize tbigint <+>
+           apply TtlvKeyBlock keyBlock
+
+template :: TtlvParser Ttlv
+template = tag   TtlvTemplate <+>
+           many  TtlvAttribute attribute_
+
+
+secretData :: TtlvParser Ttlv
+secretData = tag   TtlvSecretData <+>
+             apply TtlvSecretDataType tenum <+>
+             apply TtlvKeyBlock keyBlock
+
+opaqueObject :: TtlvParser Ttlv
+opaqueObject = tag   TtlvOpaqueObject <+>
+               apply TtlvOpaqueDataType tenum <+>
+               apply TtlvOpaqueDataValue tbytestring
+
 
 
 -- Testing
@@ -237,16 +380,21 @@ test = hspec $ do
     it "should fail bad matches" $ do
       let x = apply TtlvAttributeName (stringEq "abc")
       runTtlvParser x xx `shouldBe` Left ["mismatch in expected value"]
-    it "should allow many" $ do
+    it "should allow many (one-many)" $ do
+      let xx' = (Ttlv TtlvAttribute (TtlvStructure [xx, yy]))
+      runTtlvParser (many1 TtlvAttribute attribute_) xx' `shouldBe` Right xx'
+      runTtlvParser (many1 TtlvArchiveDate attribute_) xx' `shouldBe` Left ["unable to find tag TtlvArchiveDate"]
+    it "should allow many (zero-many)" $ do
       let xx' = (Ttlv TtlvAttribute (TtlvStructure [xx, yy]))
       runTtlvParser (many TtlvAttribute attribute_) xx' `shouldBe` Right xx'
+      runTtlvParser (many TtlvArchiveDate attribute_) xx' `shouldBe` Right xx'
 
     describe "Objects" $ do
       describe "Attribute" $ do
         it "valid" $ do
           runTtlvParser (attribute "x-hi" string) xx `shouldBe` Right xx
         it "unexpected attribute" $ do
-          runTtlvParser (attribute "x-hi" integer) xx `shouldBe` Left ["failed combinator", "not an integer"]
+          runTtlvParser (attribute "x-hi" tint) xx `shouldBe` Left ["failed combinator", "not an int"]
       describe "Credential" $ do
         it "valid" $ do
           runTtlvParser credential zz `shouldBe` Right zz
