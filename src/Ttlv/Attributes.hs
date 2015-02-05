@@ -1,3 +1,5 @@
+-- KMIP Attribute
+
 module Ttlv.Attributes where
 
 import Ttlv.Tag
@@ -77,7 +79,7 @@ initialDate = tag TtlvInitialDate <+>
 activationDate = tag TtlvActivationDate <+>
                  tdatetime
 
-processStartdate = tag TtlvProcessStartDate <+>
+processStartDate = tag TtlvProcessStartDate <+>
                    tdatetime
 
 protectStopDate = tag TtlvProcessStartDate <+>
@@ -102,5 +104,57 @@ revocationReason = tag TtlvRevocationReason <+>
 archiveDate = tag TtlvArchiveDate <+>
               tdatetime
 
--- TODO
--- objectGroup = _
+objectGroup = tag TtlvObjectGroup <+>
+              tstring
+
+link = tag TtlvLink <+>
+       apply TtlvLinkType tenum <+>
+       apply TtlvLinkedObjectIdentifier tstring
+
+applicationSpecificInfo = tag TtlvApplicationSpecificInformation <+>
+                          apply TtlvApplicationNamespace tstring <+>
+                          apply TtlvApplicationData tstring
+
+contactInformation = tag TtlvContactInformation <+>
+                     tstring
+
+lastChangeDate = tag TtlvLastChangeDate <+>
+                 tdatetime
+
+customAttribute = tag TtlvCustomAttribute <+>
+                  ok -- TODO disallow sub-structures
+
+-- any attribute
+any = uniqueIdentifier <|>
+      name <|>
+      objectType <|>
+      cryptographicAlgorithm <|>
+      cryptographicLength <|>
+      cryptographicParameters <|>
+      cryptographicDomainParameters <|>
+      certificateType <|>
+      certificateIdentifier <|>
+      certificateSubject <|>
+      certificateIssuer <|>
+      digest <|>
+      operationPolicyName <|>
+      cryptographicUsageMask <|>
+      leaseTime <|>
+      usageLimits <|>
+      state <|>
+      initialDate <|>
+      activationDate <|>
+      processStartDate <|>
+      protectStopDate <|>
+      deactivationDate <|>
+      destroyDate <|>
+      compromiseOccurrenceDate <|>
+      compromiseDate <|>
+      revocationReason <|>
+      archiveDate <|>
+      objectGroup <|>
+      link <|>
+      applicationSpecificInfo <|>
+      contactInformation <|>
+      lastChangeDate <|>
+      customAttribute
