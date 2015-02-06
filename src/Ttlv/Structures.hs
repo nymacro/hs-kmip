@@ -207,3 +207,7 @@ optional tag parser = TtlvParser $ \t ->
 ok :: TtlvParser Ttlv
 ok = TtlvParser $ \t -> Right t
 
+-- | on: *
+-- | return an error
+nok :: String -> TtlvParser Ttlv
+nok msg = TtlvParser $ \t -> Left [msg]

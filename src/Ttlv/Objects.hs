@@ -151,6 +151,15 @@ opaqueObject = tag   TtlvOpaqueObject <+>
                apply TtlvOpaqueDataType tenum <+>
                apply TtlvOpaqueDataValue tbytestring
 
+cryptoObject = certificate <|>
+               symmetricKey <|>
+               publicKey <|>
+               privateKey <|>
+               splitKey <|>
+               template <|>
+               secretData <|>
+               opaqueObject
+               
 
 
 -- Testing
