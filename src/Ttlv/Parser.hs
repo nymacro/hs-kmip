@@ -2,6 +2,9 @@
 module Ttlv.Parser ( encodeTtlv
                    , decodeTtlv ) where
 
+import Debug.Trace (trace)
+
+import Data.Int
 import Data.Binary
 import Data.Binary.Get
 import Data.Binary.Put
@@ -73,15 +76,14 @@ parseTtlvBool = do
   val <- getWord64be
   return $ TtlvBool (val == 1)
 
--- FIXME this isn't implemented
-parseTtlvString :: Get TtlvData
-parseTtlvString = do
-  val <- getRemainingLazyByteString
+parseTtlvString :: Int -> Get TtlvData
+parseTtlvString n = do
+  val <- getLazyByteString $ fromIntegral n
   return $ TtlvString $ map BS.w2c $ L.unpack val
 
-parseTtlvByteString :: Get TtlvData
-parseTtlvByteString = do
-  val <- getRemainingLazyByteString
+parseTtlvByteString :: Int -> Get TtlvData
+parseTtlvByteString n = do
+  val <- getLazyByteString $ fromIntegral n
   return $ TtlvByteString val
 
 parseTtlvDateTime :: Get TtlvData
@@ -105,24 +107,32 @@ prettyPrint = concat . map (flip showHex "-") . L.unpack
 
 parseTtlv :: Get Ttlv
 parseTtlv = do
+  --rea <- remaining
+  --trace ("Full:" ++ show rea) remaining
   tag <- getLazyByteString 3
   typ <- getWord8
   len <- getWord32be
+  --rea <- remaining
+  --trace ("Len:" ++ show rea) remaining
+  -- 8 bytes
   val <- getLazyByteString $ fromIntegral len
-  when (fromIntegral typ `elem` [2, 5, 10]) $ skip 4 -- skip padding
+  -- 8-byte/64-bit alignment for all data
+  let skipBytes = (8 - (len `rem` 8)) `rem` 8 -- FIXME maybe??
+  when (fromIntegral typ `elem` [2, 5, 10, 7, 8]) $ skip $ fromIntegral skipBytes
+  --trace ("Skip bytes:" ++ show skipBytes) remaining
   return $ Ttlv (toTtlvTag $ decodeTtlvTag tag)
-             (case fromIntegral typ of
-                1  -> runGet parseTtlvStructure val
-                2  -> runGet parseTtlvInt val
-                3  -> runGet parseTtlvLongInt val
-                4  -> runGet parseTtlvBigInt val
-                5  -> runGet parseTtlvEnum val
-                6  -> runGet parseTtlvBool val
-                7  -> runGet parseTtlvString val
-                8  -> runGet parseTtlvByteString val
-                9  -> runGet parseTtlvDateTime val
-                10 -> runGet parseTtlvInterval val
-                otherwise -> error "unknown type")
+    (case fromIntegral typ of
+        1  -> runGet parseTtlvStructure val
+        2  -> runGet parseTtlvInt val
+        3  -> runGet parseTtlvLongInt val
+        4  -> runGet parseTtlvBigInt val
+        5  -> runGet parseTtlvEnum val
+        6  -> runGet parseTtlvBool val
+        7  -> runGet (parseTtlvString $ fromIntegral len) val
+        8  -> runGet (parseTtlvByteString $ fromIntegral len) val
+        9  -> runGet parseTtlvDateTime val
+        10 -> runGet parseTtlvInterval val
+        otherwise -> error "unknown type")
 
 -- | Retrieve the corresponding ID for TtlvData
 ttlvDataType :: TtlvData -> Int
@@ -136,35 +146,31 @@ ttlvDataType (TtlvString _) = 7
 ttlvDataType (TtlvByteString _) = 8
 ttlvDataType (TtlvDateTime _) = 9
 ttlvDataType (TtlvInterval _) = 10
--- ttlvDataType (TtlvRepeated x) = ttlvDataType $ head x
 
 ttlvDataLength :: TtlvData -> Int
 ttlvDataLength (TtlvStructure x) = foldr1 (+) $ map ttlvLength x
-ttlvDataLength (TtlvInt _) = 8 -- w/padding
+ttlvDataLength (TtlvInt _) = 4 -- w/o padding
 ttlvDataLength (TtlvLongInt _) = 8
-ttlvDataLength (TtlvBigInt x) = let len = CN.lengthBytes x
-                                in len + (len `mod` 8) -- w/padding
-ttlvDataLength (TtlvEnum _) = 8 -- w/padding
+ttlvDataLength (TtlvBigInt x) = CN.lengthBytes x -- w/o padding
+ttlvDataLength (TtlvEnum _) = 4 -- w/o padding
 ttlvDataLength (TtlvBool _) = 8
-ttlvDataLength (TtlvString x) = length x
-ttlvDataLength (TtlvByteString x) = fromIntegral $ L.length x
+ttlvDataLength (TtlvString x) = length x -- w/o padding
+ttlvDataLength (TtlvByteString x) = fromIntegral $ L.length x -- w/o padding
 ttlvDataLength (TtlvDateTime _) = 8
-ttlvDataLength (TtlvInterval _) = 8 -- w/padding
--- ttlvDataLength (TtlvRepeated x) = foldr1 (+) $ map ttlvDataLength x
+ttlvDataLength (TtlvInterval _) = 4 -- w/o padding
 
 ttlvLength :: Ttlv -> Int
-ttlvLength (Ttlv t d) = 3 + 1 + 4 + (ttlvDataLength d)
+ttlvLength (Ttlv t d) = 3 + 1 + 4 + (paddedTtlvDataLength d)
 
+-- put data without padding
 unparseTtlvData :: TtlvData -> Put
 unparseTtlvData (TtlvStructure x) = mapM_ unparseTtlv x
 unparseTtlvData (TtlvInt x) = do
   putWord32be $ fromIntegral x
-  putWord32be 0
 unparseTtlvData (TtlvLongInt x) = putWord64be $ fromIntegral x
 unparseTtlvData z@(TtlvBigInt x) = putByteString $ CN.i2ospOf_ (ttlvDataLength z) x
 unparseTtlvData (TtlvEnum x) = do
   putWord32be $ fromIntegral x
-  putWord32be 0
 unparseTtlvData (TtlvBool x) = if x
                                then putWord64be 1
                                else putWord64be 0
@@ -173,7 +179,16 @@ unparseTtlvData (TtlvByteString x) = putLazyByteString x
 unparseTtlvData (TtlvDateTime x) = putWord64be $ fromIntegral $ round $ utcTimeToPOSIXSeconds x
 unparseTtlvData (TtlvInterval x) = do
   putWord32be $ fromIntegral x
-  putWord32be 0
+
+paddedTtlvDataLength :: TtlvData -> Int
+paddedTtlvDataLength (TtlvInt _) = 8
+paddedTtlvDataLength (TtlvEnum _) = 8
+paddedTtlvDataLength (TtlvInterval _) = 8
+paddedTtlvDataLength x@(TtlvString _) = let n = ttlvDataLength x
+                                        in n + (8 - (n `rem` 8)) `rem` 8
+paddedTtlvDataLength x@(TtlvByteString _) = let n = ttlvDataLength x
+                                            in n + (8 - (n `rem` 8)) `rem` 8
+paddedTtlvDataLength x = ttlvDataLength x
 
 unparseTtlv :: Ttlv -> Put
 unparseTtlv (Ttlv t d) = do
@@ -181,11 +196,12 @@ unparseTtlv (Ttlv t d) = do
   putWord8 $ fromIntegral $ ttlvDataType d
   -- this is terrible. Find a better way to do this
   let length = ttlvDataLength d
-      real_length = if ttlvDataType d `elem` [2, 5, 10]
-                    then length - 4
-                    else length
-  putWord32be $ fromIntegral $ real_length
+      realLength = paddedTtlvDataLength d
+  --trace ("Length: " ++ show length ++ " Real Length:" ++ show realLength) (return ())
+  putWord32be $ fromIntegral length
   unparseTtlvData d
+  -- add padding at end
+  replicateM_ (realLength - length) (putWord8 0)
 
 
 protocolVersion :: Int -> Int -> Ttlv
@@ -202,6 +218,7 @@ validateProtocolVersion _ = False
 -- validateEnum (Ttlv t d) = 
 
 fromHex x = L.fromChunks [fst $ B16.decode x]
+toHex x = map B16.encode (L.toChunks x)
 
 exampleTtlvs = [ "42002002000000040000000800000000" -- Integer
                , "420020030000000801B69B4BA5749200" -- Long Integer
@@ -214,6 +231,7 @@ exampleTtlvs = [ "42002002000000040000000800000000" -- Integer
                , "4200200A00000004000D2F0000000000" -- Interval
                , "42002001000000204200040500000004000000FE000000004200050200000004000000FF00000000" -- Structure
                ]
+
 testTtlvs = map fromHex exampleTtlvs
 
 -- | Decode a Lazy ByteString into the corresponding Ttlv type
@@ -223,7 +241,7 @@ decodeTtlv = runGet parseTtlv
 
 encodeTtlv :: Ttlv -> L.ByteString
 encodeTtlv x = runPut $ unparseTtlv x
-  
+
 test :: IO ()
 test = do
   hspec $ do
