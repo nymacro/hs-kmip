@@ -50,27 +50,28 @@ spec = do
           let t = (Ttlv TtlvCompromiseDate (TtlvBigInt 1234567890000000000000000000))
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode Big Integer" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvBigInt (-1)))
+          let t = Ttlv TtlvCompromiseDate (TtlvBigInt (-1))
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode Enumeration" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvEnum 255))
+          let t = Ttlv TtlvCompromiseDate (TtlvEnum 255)
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode Boolean" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvBool True))
+          let t = Ttlv TtlvCompromiseDate (TtlvBool True)
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode String" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvString "Hello World"))
+          let t = Ttlv TtlvCompromiseDate (TtlvString "Hello World")
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode ByteString" $ do
-          pending
+          let t = Ttlv TtlvCompromiseDate (TtlvByteString $ fromHex "010203")
+          (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode DateTime" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvString "Hello World"))
+          let t = Ttlv TtlvCompromiseDate (TtlvString "Hello World")
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode Interval" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvInterval 864000))
+          let t = Ttlv TtlvCompromiseDate (TtlvInterval 864000)
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
         it "should encode/decode Structure" $ do
-          let t = (Ttlv TtlvCompromiseDate (TtlvStructure [Ttlv TtlvApplicationSpecificInformation (TtlvEnum 254),Ttlv TtlvArchiveDate (TtlvInt 255)]))
+          let t = Ttlv TtlvCompromiseDate (TtlvStructure [Ttlv TtlvApplicationSpecificInformation (TtlvEnum 254),Ttlv TtlvArchiveDate (TtlvInt 255)])
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
           
       describe "Decode" $ do
@@ -87,8 +88,7 @@ spec = do
         it "should decode String" $ do
           decodeTtlv (testTtlvs !! 5) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvString "Hello World"))
         it "should decode ByteString" $ do
-          pending
-          -- decodeTtlv (testTtlvs !! 6) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvByteString undefined))
+          decodeTtlv (testTtlvs !! 6) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvByteString (fromHex "010203")))
         it "should decode DateTime" $ do
           decodeTtlv (testTtlvs !! 7) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvDateTime (fromJust $ parseTime defaultTimeLocale "%F %T %Z" "2008-03-14 11:56:40 UTC")))
         it "should decode Interval" $ do
