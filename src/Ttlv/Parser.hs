@@ -37,16 +37,22 @@ instance Binary Ttlv where
 
 parseTtlvStructure' :: Get [Ttlv]
 parseTtlvStructure' = do
-  ttlv <- parseTtlv
   empty <- isEmpty
-  if empty
-  then return [ttlv]
+  if empty -- handle empty structure
+  then return []
   else do
-    rest <- parseTtlvStructure'
-    return $ ttlv : rest
+    ttlv <- parseTtlv
+    empty <- isEmpty
+    if empty
+    then return [ttlv]
+    else do
+      rest <- parseTtlvStructure'
+      return $ ttlv : rest
 
 parseTtlvStructure :: Get TtlvData
 parseTtlvStructure = do
+  -- rea <- remaining
+  -- trace ("PARSE STRUCT:" ++ show rea) remaining
   ttlvs <- parseTtlvStructure'
   return $ TtlvStructure ttlvs
 
@@ -61,9 +67,9 @@ parseTtlvLongInt = do
   return $ TtlvLongInt $ fromIntegral val
 
 -- FIXME this isn't implemented
-parseTtlvBigInt :: Get TtlvData
-parseTtlvBigInt = do
-  val <- getRemainingLazyByteString
+parseTtlvBigInt :: Int -> Get TtlvData
+parseTtlvBigInt n = do
+  val <- getLazyByteString $ fromIntegral n
   return $ TtlvBigInt $ CN.os2ip $ L.toStrict val
 
 parseTtlvEnum :: Get TtlvData
@@ -107,25 +113,34 @@ prettyPrint = concat . map (flip showHex "-") . L.unpack
 
 parseTtlv :: Get Ttlv
 parseTtlv = do
-  --rea <- remaining
-  --trace ("Full:" ++ show rea) remaining
+  -- trace ("--------------------------------------") remaining
+  -- rea <- remaining
+  -- trace ("Full:" ++ show rea) remaining
   tag <- getLazyByteString 3
+  -- trace ("Tag:" ++ (show $ toHex tag)) remaining
   typ <- getWord8
+  -- trace ("Typ:" ++ show typ) remaining
   len <- getWord32be
-  --rea <- remaining
-  --trace ("Len:" ++ show rea) remaining
-  -- 8 bytes
+  -- trace ("Len:" ++ show len) remaining
+  -- rea <- remaining
+  -- trace ("Rem:" ++ show rea) remaining
   val <- getLazyByteString $ fromIntegral len
-  -- 8-byte/64-bit alignment for all data
+  -- trace ("VAL: " ++ (show $ toHex val)) remaining
+  -- 8-byte/64-bit alignment for 
   let skipBytes = (8 - (len `rem` 8)) `rem` 8 -- FIXME maybe??
-  when (fromIntegral typ `elem` [2, 5, 10, 7, 8]) $ skip $ fromIntegral skipBytes
-  --trace ("Skip bytes:" ++ show skipBytes) remaining
+  when (skipBytes /= 0 && (fromIntegral typ `elem` [2, 5, 7, 8, 10])) $
+    skip $ fromIntegral skipBytes
+  -- trace ("Skip bytes:" ++ show skipBytes) remaining
+  -- rea <- remaining
+  -- trace ("XRem:" ++ show rea) remaining
+  -- trace ("Len:" ++ show len) remaining
+  -- trace ("Val Len:" ++ show (fromIntegral $ L.length val)) remaining
   return $ Ttlv (toTtlvTag $ decodeTtlvTag tag)
     (case fromIntegral typ of
         1  -> runGet parseTtlvStructure val
         2  -> runGet parseTtlvInt val
         3  -> runGet parseTtlvLongInt val
-        4  -> runGet parseTtlvBigInt val
+        4  -> runGet (parseTtlvBigInt $ fromIntegral len) val
         5  -> runGet parseTtlvEnum val
         6  -> runGet parseTtlvBool val
         7  -> runGet (parseTtlvString $ fromIntegral len) val
@@ -148,7 +163,9 @@ ttlvDataType (TtlvDateTime _) = 9
 ttlvDataType (TtlvInterval _) = 10
 
 ttlvDataLength :: TtlvData -> Int
-ttlvDataLength (TtlvStructure x) = foldr1 (+) $ map ttlvLength x
+ttlvDataLength (TtlvStructure x) = if length x == 0
+                                   then 0 -- empty structure
+                                   else foldr1 (+) $ map ttlvLength x
 ttlvDataLength (TtlvInt _) = 4 -- w/o padding
 ttlvDataLength (TtlvLongInt _) = 8
 ttlvDataLength (TtlvBigInt x) = CN.lengthBytes x -- w/o padding
