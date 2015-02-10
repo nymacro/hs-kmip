@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 -- naming convention: kmip_<KMIP VERSION>__<SECTION VERSION>_<REQUEST/RESPONSE>
-module Spec where
+module Kmip10Spec where
 
 import Ttlv.Tag
 import Ttlv.Data

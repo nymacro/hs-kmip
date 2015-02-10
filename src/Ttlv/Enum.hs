@@ -2,7 +2,7 @@ module Ttlv.Enum where
 import Ttlv.Tag
 import Ttlv.Data
 
-import Test.Hspec
+-- import Test.Hspec
 
 class Enum a => TtlvEnumType a where
   toTtlvEnum :: Int -> a
@@ -197,10 +197,10 @@ instance TtlvEnumType PaddingMethod where
   ttlvEnumTag _ = TtlvPaddingMethod
 
 
-test :: IO ()
-test = do
-  hspec $ do
-    describe "Ttlv.Enum" $ do
-      it "should convert between KeyCompressionType" $ do
-        (toTtlvEnum 1 :: KeyCompressionType) `shouldBe` ECPubKeyUncompressed
-        fromTtlvEnum ECPubKeyUncompressed `shouldBe` 1
+-- test :: IO ()
+-- test = do
+--   hspec $ do
+--     describe "Ttlv.Enum" $ do
+--       it "should convert between KeyCompressionType" $ do
+--         (toTtlvEnum 1 :: KeyCompressionType) `shouldBe` ECPubKeyUncompressed
+--         fromTtlvEnum ECPubKeyUncompressed `shouldBe` 1
