@@ -60,13 +60,13 @@ messageExtension = tag TtlvMessageExtension <+>
                    apply TtlvVendorExtension tstruct
 
 -- Format
-requestMessage = tag TtlvRequestMessage <+>
-                 apply TtlvRequestMessage tstruct <+>
-                 many TtlvBatchItem batchItem
+requestMessage = tag TtlvRequestMessage <+> tstruct <+>
+                 apply TtlvRequestHeader requestHeader <+>
+                 many1 TtlvBatchItem batchItem
 
-responseMessage = tag TtlvResponseMessage <+>
-                  apply TtlvResponseHeader tstruct <+>
-                  many TtlvBatchItem batchItem
+responseMessage = tag TtlvResponseMessage <+> tstruct <+>
+                  apply TtlvResponseHeader responseHeader <+>
+                  many1 TtlvBatchItem batchItem
 
 requestHeader = tag TtlvRequestHeader <+>
                 apply TtlvProtocolVersion protocolVersion <+>

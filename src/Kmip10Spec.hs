@@ -11,6 +11,11 @@ import Test.Hspec
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Base16 as B16
 
+
+import Ttlv.Message
+import Ttlv.Objects
+import Ttlv.Structures
+
 fromHex x = L.fromChunks [fst $ B16.decode x]
 
 kmip_1_0__3_1_1_create_request = fromHex "42007801000001204200770100000038420069010000002042006A0200000004000000010000000042006B0200000004000000000000000042000D0200000004000000010000000042000F01000000D842005C0500000004000000010000000042007901000000C04200570500000004000000020000000042009101000000A8420008010000003042000A070000001743727970746F6772617068696320416C676F726974686D0042000B05000000040000000300000000420008010000003042000A070000001443727970746F67726170686963204C656E6774680000000042000B02000000040000008000000000420008010000003042000A070000001843727970746F67726170686963205573616765204D61736B42000B02000000040000000C00000000"
@@ -76,7 +81,7 @@ test :: IO ()
 test = hspec spec
 
 xxx = do
-  putStrLn $ show $ decodeTtlv kmip_1_0__3_1_2_register_request
+  putStrLn $ show $ decodeTtlv kmip_1_0__3_1_1_create_request
 
 spec :: Spec
 spec = do
@@ -142,3 +147,68 @@ spec = do
           encodeTtlv (decodeTtlv kmip_1_0__3_1_5_register_response) `shouldBe` kmip_1_0__3_1_5_register_response
           encodeTtlv (decodeTtlv kmip_1_0__3_1_5_destroy_request) `shouldBe` kmip_1_0__3_1_5_destroy_request
           encodeTtlv (decodeTtlv kmip_1_0__3_1_5_destroy_response) `shouldBe` kmip_1_0__3_1_5_destroy_response
+
+    describe "1.0 Validation" $ do
+      let runIt x y = let j = decodeTtlv y
+                      in runTtlvParser x j `shouldBe` Right j
+      it "3.1.1" $ do
+        runIt requestMessage kmip_1_0__3_1_1_create_request
+        runIt responseMessage kmip_1_0__3_1_1_create_response
+        runIt requestMessage kmip_1_0__3_1_1_destroy_request
+        runIt responseMessage kmip_1_0__3_1_1_destroy_response
+
+      it "3.1.2" $ do
+        runIt requestMessage kmip_1_0__3_1_2_register_request
+        runIt responseMessage kmip_1_0__3_1_2_register_response
+        runIt requestMessage kmip_1_0__3_1_2_create_request
+        runIt responseMessage kmip_1_0__3_1_2_create_response
+        runIt requestMessage kmip_1_0__3_1_2_get_attributes_request
+        runIt responseMessage kmip_1_0__3_1_2_get_attributes_response
+        runIt requestMessage kmip_1_0__3_1_2_destroy_request1
+        runIt responseMessage kmip_1_0__3_1_2_destroy_response1
+        runIt requestMessage kmip_1_0__3_1_2_destroy_request2
+        runIt responseMessage kmip_1_0__3_1_2_destroy_response2
+
+      it "3.1.3" $ do
+        runIt requestMessage kmip_1_0__3_1_3_create_request
+        runIt responseMessage kmip_1_0__3_1_3_create_response
+        runIt requestMessage kmip_1_0__3_1_3_locate_request1
+        runIt responseMessage kmip_1_0__3_1_3_locate_response1
+        runIt requestMessage kmip_1_0__3_1_3_get_request
+        runIt responseMessage kmip_1_0__3_1_3_get_response
+        runIt requestMessage kmip_1_0__3_1_3_destroy_request
+        runIt responseMessage kmip_1_0__3_1_3_destroy_response
+        runIt requestMessage kmip_1_0__3_1_3_locate_request2
+        runIt responseMessage kmip_1_0__3_1_3_locate_response2
+
+      it "3.1.4" $ do
+        runIt requestMessage kmip_1_0__3_1_4_a_register_request
+        runIt responseMessage kmip_1_0__3_1_4_a_register_response
+        runIt requestMessage kmip_1_0__3_1_4_a_create_request
+        runIt responseMessage kmip_1_0__3_1_4_a_create_response
+        runIt requestMessage kmip_1_0__3_1_4_b_locate_request
+        runIt responseMessage kmip_1_0__3_1_4_b_locate_response
+        runIt requestMessage kmip_1_0__3_1_4_b_get_attribute_list_request
+        runIt responseMessage kmip_1_0__3_1_4_b_get_attribute_list_response
+        runIt requestMessage kmip_1_0__3_1_4_b_get_attributes_request
+        runIt responseMessage kmip_1_0__3_1_4_b_get_attributes_response
+        runIt requestMessage kmip_1_0__3_1_4_b_add_attribute_request
+        runIt responseMessage kmip_1_0__3_1_4_b_add_attribute_response
+        runIt requestMessage kmip_1_0__3_1_4_b_modify_attribute_request
+        runIt responseMessage kmip_1_0__3_1_4_b_modify_attribute_response
+        runIt requestMessage kmip_1_0__3_1_4_b_delete_attribute_request
+        runIt responseMessage kmip_1_0__3_1_4_b_delete_attribute_response
+        runIt requestMessage kmip_1_0__3_1_4_a_destroy_request1
+        runIt responseMessage kmip_1_0__3_1_4_a_destroy_response1
+        runIt requestMessage kmip_1_0__3_1_4_a_get_request1
+        runIt responseMessage kmip_1_0__3_1_4_a_get_response1
+        runIt requestMessage kmip_1_0__3_1_4_a_destroy_request2
+        runIt responseMessage kmip_1_0__3_1_4_a_destroy_response2
+        runIt requestMessage kmip_1_0__3_1_4_a_get_request2
+        runIt responseMessage kmip_1_0__3_1_4_a_get_response2
+
+      it "3.1.5" $ do
+        runIt requestMessage kmip_1_0__3_1_5_register_request
+        runIt responseMessage kmip_1_0__3_1_5_register_response
+        runIt requestMessage kmip_1_0__3_1_5_destroy_request
+        runIt responseMessage kmip_1_0__3_1_5_destroy_response
