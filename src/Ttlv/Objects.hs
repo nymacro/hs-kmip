@@ -4,7 +4,6 @@ module Ttlv.Objects  where
 import Ttlv.Tag
 import Ttlv.Data
 import Ttlv.Structures
-import qualified Ttlv.Enum as TEnum
 
 attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
 attribute name vf = tag TtlvAttribute <+>
@@ -148,26 +147,11 @@ opaqueObject = tag   TtlvOpaqueObject <+>
                apply TtlvOpaqueDataType tenum <+>
                apply TtlvOpaqueDataValue tbytestring
 
-cryptoObject = certificate <|>
-               symmetricKey <|>
-               publicKey <|>
-               privateKey <|>
-               splitKey <|>
-               template <|>
-               secretData <|>
-               opaqueObject
-               
-
-
--- Testing
-xx = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-hi")
-                                        , Ttlv TtlvAttributeIndex (TtlvInt 0)
-                                        , Ttlv TtlvAttributeValue (TtlvString "hello world") ]))
-yy = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-yo")
-                                        , Ttlv TtlvAttributeIndex (TtlvInt 1)
-                                        , Ttlv TtlvAttributeValue (TtlvString "sticker") ]))
-
-zz = Ttlv TtlvCredential (TtlvStructure [ Ttlv TtlvCredentialType (TtlvEnum $ TEnum.fromTtlvEnum TEnum.UsernameAndPassword)
-                                        , Ttlv TtlvCredentialValue (TtlvStructure [ Ttlv TtlvUsername (TtlvString "aaron")
-                                                                                  , Ttlv TtlvPassword (TtlvString "password") ])])
-
+cryptoObject = apply TtlvCertificate certificate <|>
+               apply TtlvSymmetricKey symmetricKey <|>
+               apply TtlvPublicKey publicKey <|>
+               apply TtlvPrivateKey privateKey <|>
+               apply TtlvSplitKey splitKey <|>
+               apply TtlvTemplate template <|>
+               apply TtlvSecretData secretData <|>
+               apply TtlvOpaqueObject opaqueObject

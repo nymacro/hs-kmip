@@ -7,6 +7,49 @@ import Ttlv.Structures
 import Ttlv.Objects
 import Ttlv.Attributes
 
+requestOperationFor t = case t of
+  1 -> createRequest
+  2 -> createKeyPairRequest
+  3 -> registerRequest
+  4 -> reKeyRequest
+  5 -> deriveKeyRequest
+  6 -> certifyRequest
+  7 -> reCertifyRequest
+  8 -> locateRequest
+  9 -> checkRequest
+  _ -> undefined
+
+requestOperation = createRequest <|>
+                   createKeyPairRequest <|>
+                   registerRequest <|>
+                   reKeyRequest <|>
+                   deriveKeyRequest <|>
+                   certifyRequest <|>
+                   reCertifyRequest <|>
+                   locateRequest <|>
+                   checkRequest
+
+responseOperationFor t = case t of
+  1 -> createResponse
+  2 -> createKeyPairResponse
+  3 -> registerResponse
+  4 -> reKeyResponse
+  5 -> deriveKeyResponse
+  6 -> certifyResponse
+  7 -> reCertifyResponse
+  8 -> locateResponse
+  9 -> checkResponse
+  _ -> undefined
+
+responseOperation = createResponse <|>
+                    createKeyPairResponse <|>
+                    registerResponse <|>
+                    reKeyResponse <|>
+                    deriveKeyResponse <|>
+                    certifyResponse <|>
+                    reCertifyResponse <|>
+                    locateResponse <|>
+                    checkResponse
 
 createRequest = apply TtlvObjectType tenum <+>
                 apply TtlvTemplateAttribute templateAttribute

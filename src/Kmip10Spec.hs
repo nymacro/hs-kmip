@@ -80,8 +80,13 @@ kmip_1_0__3_1_5_destroy_response = fromHex "42007B01000000B042007A01000000484200
 test :: IO ()
 test = hspec spec
 
+        -- runIt requestMessage kmip_1_0__3_1_1_create_request
+        -- runIt responseMessage kmip_1_0__3_1_1_create_response
+        -- runIt requestMessage kmip_1_0__3_1_1_destroy_request
+        -- runIt responseMessage kmip_1_0__3_1_1_destroy_response
+
 xxx = do
-  putStrLn $ show $ decodeTtlv kmip_1_0__3_1_1_create_request
+  putStrLn $ show $ runTtlvParser requestMessage (decodeTtlv kmip_1_0__3_1_1_create_request)
 
 spec :: Spec
 spec = do

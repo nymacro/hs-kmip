@@ -6,6 +6,19 @@ import Ttlv.Data
 import Ttlv.Tag
 import Ttlv.Objects
 import Ttlv.Structures
+import qualified Ttlv.Enum as TEnum
+
+xx = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-hi")
+                                        , Ttlv TtlvAttributeIndex (TtlvInt 0)
+                                        , Ttlv TtlvAttributeValue (TtlvString "hello world") ]))
+yy = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-yo")
+                                        , Ttlv TtlvAttributeIndex (TtlvInt 1)
+                                        , Ttlv TtlvAttributeValue (TtlvString "sticker") ]))
+
+zz = Ttlv TtlvCredential (TtlvStructure [ Ttlv TtlvCredentialType (TtlvEnum $ TEnum.fromTtlvEnum TEnum.UsernameAndPassword)
+                                        , Ttlv TtlvCredentialValue (TtlvStructure [ Ttlv TtlvUsername (TtlvString "aaron")
+                                                                                  , Ttlv TtlvPassword (TtlvString "password") ])])
+
 
 spec :: Spec
 spec = do

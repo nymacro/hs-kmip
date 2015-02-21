@@ -8,6 +8,7 @@ import Ttlv.Tag
 import Ttlv.Data
 import Control.Lens
 import qualified Data.List as L
+import Data.Either
 
 newtype TtlvParser a = TtlvParser { runTtlvParser :: (a -> Either [String] a) }
 
@@ -28,9 +29,9 @@ x <+> y = TtlvParser $ \t ->
 either :: TtlvParser a -> TtlvParser a -> TtlvParser a
 either x y = TtlvParser $ \t -> case runTtlvParser x t of
   x'@(Right _) -> x'
-  Left _ -> case runTtlvParser y t of
+  Left e -> case runTtlvParser y t of
     y'@(Right _) -> y'
-    Left e -> Left $ "neither matched" : e
+    Left e' -> Left $ ["neither matched: " ++ concat e ++ " | " ++ concat e']
 
 (<|>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
 (<|>) = Ttlv.Structures.either
@@ -51,16 +52,16 @@ struct p t = TtlvParser $ \t ->
     (Just s) -> if 1 == length s
                 then runTtlvParser p (head s)
                 else Left ["couldn't find structure"]
-    Nothing -> Left ["not a structure"]
+    Nothing -> Left ["not a structure " ++ show t]
 
 -- | check if struct contains a specific tag
-struct1 :: (Ttlv -> Bool) -> TtlvParser Ttlv
-struct1 fn = TtlvParser $ \t ->
-  case (getTtlvData t) ^? _TtlvStructure of
-    (Just s) -> if 1 == (length $ filter fn s)
-                then Right t
-                else Left ["not enough/too many"]
-    Nothing -> Left ["not a structure"]
+-- struct1 :: (Ttlv -> Bool) -> TtlvParser Ttlv
+-- struct1 fn = TtlvParser $ \t ->
+--   case (getTtlvData t) ^? _TtlvStructure of
+--     (Just s) -> if 1 == (length $ filter fn s)
+--                 then Right t
+--                 else Left ["not enough/too many"]
+--     Nothing -> Left ["not a structure"]
 
 -- | on: Structure
 -- | return: The Ttlv for `tag`
@@ -68,12 +69,18 @@ struct1 fn = TtlvParser $ \t ->
 find :: TtlvTag -> TtlvParser Ttlv
 find tag = TtlvParser $ \t ->
   case (getTtlvData t) ^? _TtlvStructure of
-    Nothing -> Left ["not a structure"]
+    Nothing -> Left ["not a structure " ++ show tag]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
       xs -> if length xs /= 1
             then Left ["too many/too few"]
             else Right $ head xs
+
+fromLeft (Left x) = x
+fromLeft (Right _) = undefined
+
+fromRight (Left _) = undefined
+fromRight (Right x) = x
 
 -- | on: Ttlv
 -- | zero-many
@@ -83,32 +90,32 @@ many tag v = TtlvParser $ \t ->
     Nothing -> Left ["not a structure"]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Right t
-      xs -> if all (\x -> case x of
-                       Right t -> True
-                       Left _ -> False) $ map (runTtlvParser v) xs
-            then Right t
-            else Left ["not everything matched"]
+      xs -> let eithers = map (runTtlvParser v) xs
+                errors = filter isLeft eithers
+            in if all isRight eithers
+               then Right t
+               else Left $ ["not everything matched for tag " ++ show tag] ++ (concat $ map fromLeft errors)
 
 -- | on: Ttlv
 -- | one-many
 many1 :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many1 tag v = TtlvParser $ \t ->
   case (getTtlvData t) ^? _TtlvStructure of
-    Nothing -> Left ["not a structure"]
+    Nothing -> Left ["not a structure" ++ show tag]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
-      xs -> if all (\x -> case x of
-                       Right t -> True
-                       Left _ -> False) $ map (runTtlvParser v) xs
-            then Right t
-            else Left ["not everything matched"]
+      xs -> let eithers = map (runTtlvParser v) xs
+                errors = filter isLeft eithers
+            in if all isRight eithers
+               then Right t
+               else Left $ ["not everything matched for tag " ++ show tag] ++ (concat $ map fromLeft errors)
 
 -- | on: Ttlv
 -- | check current Ttlv tag
 tag :: TtlvTag -> TtlvParser Ttlv
 tag tag' = TtlvParser $ \t -> if getTtlvTag t == tag'
                               then Right t
-                              else Left ["current tag not " ++ show tag']
+                              else Left ["current tag not " ++ show tag' ++ " but " ++ show (getTtlvTag t)]
 
 -- | on: Ttlv
 -- | check Ttlv data type
@@ -200,7 +207,6 @@ optional tag parser = TtlvParser $ \t ->
       Right _ -> Right t
       Left y' -> Left y'
     Left _  -> Right t
-
 
 -- | on: *
 -- | identity for TtlvParser
