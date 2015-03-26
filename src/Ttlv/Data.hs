@@ -9,10 +9,6 @@ import Control.Lens
 import Data.Time
 import qualified Data.ByteString.Lazy as L
 
--- | Data type representing Ttlv-encoding of KMIP message
-data Ttlv = Ttlv { getTtlvTag :: TtlvTag, getTtlvData :: TtlvData }
-            deriving (Show, Eq)
-
 -- | Tag data
 data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
               | TtlvInt { ttlvInt :: Int }
@@ -25,6 +21,10 @@ data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
               | TtlvDateTime { ttlvDateTime :: UTCTime }
               | TtlvInterval { ttlvInterval :: Int }
               deriving (Show, Eq)
+
+-- | Data type representing Ttlv-encoding of KMIP message
+data Ttlv = Ttlv { getTtlvTag :: TtlvTag, getTtlvData :: TtlvData }
+            deriving (Show, Eq)
 
 makeLenses ''Ttlv
 

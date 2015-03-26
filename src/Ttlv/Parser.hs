@@ -1,16 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ttlv.Parser ( encodeTtlv
                    , decodeTtlv
-                   , validateProtocolVersion
-                   , protocolVersion ) where
+                   ) where
 
 import Debug.Trace (trace)
 
 import Data.Binary
 import Data.Binary.Get
 import Data.Binary.Put
--- import qualified Data.ByteString as B
--- import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Internal as BS (w2c, c2w)
 import qualified Crypto.Number.Serialize as CN (os2ip, i2osp, i2ospOf_, lengthBytes)
@@ -44,8 +41,6 @@ parseTtlvStructure' = do
 
 parseTtlvStructure :: Get TtlvData
 parseTtlvStructure = do
-  -- rea <- remaining
-  -- trace ("PARSE STRUCT:" ++ show rea) remaining
   ttlvs <- parseTtlvStructure'
   return $ TtlvStructure ttlvs
 
@@ -59,7 +54,7 @@ parseTtlvLongInt = do
   val <- getWord64be
   return $ TtlvLongInt $ fromIntegral val
 
--- FIXME this isn't implemented
+-- FIXME this doesn't handle negative numbers
 parseTtlvBigInt :: Int -> Get TtlvData
 parseTtlvBigInt n = do
   val <- getLazyByteString $ fromIntegral n
@@ -103,28 +98,13 @@ encodeTtlvTag x = snd $ fromJust $ L.uncons $ encode (fromIntegral x :: Word32)
 
 parseTtlv :: Get Ttlv
 parseTtlv = do
-  -- trace ("--------------------------------------") remaining
-  -- rea <- remaining
-  -- trace ("Full:" ++ show rea) remaining
   tag <- getLazyByteString 3
-  -- trace ("Tag:" ++ (show $ toHex tag)) remaining
   typ <- getWord8
-  -- trace ("Typ:" ++ show typ) remaining
   len <- getWord32be
-  -- trace ("Len:" ++ show len) remaining
-  -- rea <- remaining
-  -- trace ("Rem:" ++ show rea) remaining
   val <- getLazyByteString $ fromIntegral len
-  -- trace ("VAL: " ++ (show $ toHex val)) remaining
-  -- 8-byte/64-bit alignment for 
   let skipBytes = (8 - (len `rem` 8)) `rem` 8 -- FIXME maybe??
   when (skipBytes /= 0 && (fromIntegral typ `elem` [2, 5, 7, 8, 10])) $
     skip $ fromIntegral skipBytes
-  -- trace ("Skip bytes:" ++ show skipBytes) remaining
-  -- rea <- remaining
-  -- trace ("XRem:" ++ show rea) remaining
-  -- trace ("Len:" ++ show len) remaining
-  -- trace ("Val Len:" ++ show (fromIntegral $ L.length val)) remaining
   return $ Ttlv (toTtlvTag $ decodeTtlvTag tag)
     (case fromIntegral typ of
         1  -> runGet parseTtlvStructure val
@@ -172,20 +152,17 @@ ttlvLength (Ttlv t d) = 3 + 1 + 4 + (paddedTtlvDataLength d)
 -- put data without padding
 unparseTtlvData :: TtlvData -> Put
 unparseTtlvData (TtlvStructure x) = mapM_ unparseTtlv x
-unparseTtlvData (TtlvInt x) = do
-  putWord32be $ fromIntegral x
+unparseTtlvData (TtlvInt x) = putWord32be $ fromIntegral x
 unparseTtlvData (TtlvLongInt x) = putWord64be $ fromIntegral x
 unparseTtlvData z@(TtlvBigInt x) = putByteString $ CN.i2ospOf_ (ttlvDataLength z) x
-unparseTtlvData (TtlvEnum x) = do
-  putWord32be $ fromIntegral x
+unparseTtlvData (TtlvEnum x) = putWord32be $ fromIntegral x
 unparseTtlvData (TtlvBool x) = if x
                                then putWord64be 1
                                else putWord64be 0
 unparseTtlvData (TtlvString x) = putLazyByteString $ L.pack $ map BS.c2w x 
 unparseTtlvData (TtlvByteString x) = putLazyByteString x
 unparseTtlvData (TtlvDateTime x) = putWord64be $ fromIntegral $ round $ utcTimeToPOSIXSeconds x
-unparseTtlvData (TtlvInterval x) = do
-  putWord32be $ fromIntegral x
+unparseTtlvData (TtlvInterval x) = putWord32be $ fromIntegral x
 
 paddedTtlvDataLength :: TtlvData -> Int
 paddedTtlvDataLength (TtlvInt _) = 8
@@ -204,30 +181,15 @@ unparseTtlv (Ttlv t d) = do
   -- this is terrible. Find a better way to do this
   let length = ttlvDataLength d
       realLength = paddedTtlvDataLength d
-  --trace ("Length: " ++ show length ++ " Real Length:" ++ show realLength) (return ())
   putWord32be $ fromIntegral length
   unparseTtlvData d
   -- add padding at end
   replicateM_ (realLength - length) (putWord8 0)
 
 
-protocolVersion :: Int -> Int -> Ttlv
-protocolVersion major minor = Ttlv TtlvProtocolVersion (TtlvStructure [ Ttlv TtlvProtocolVersionMajor (TtlvInt major)
-                                                                      , Ttlv TtlvProtocolVersionMinor (TtlvInt minor)])
-
--- validate :: Ttlv -> Bool
-
-validateProtocolVersion :: Ttlv -> Bool
-validateProtocolVersion (Ttlv TtlvProtocolVersion (TtlvStructure [Ttlv TtlvProtocolVersionMajor _, Ttlv TtlvProtocolVersionMinor _])) = True
-validateProtocolVersion _ = False
-
--- validateEnum :: Ttlv -> Bool
--- validateEnum (Ttlv t d) = 
-
 -- | Decode a Lazy ByteString into the corresponding Ttlv type
 decodeTtlv :: L.ByteString -> Ttlv
 decodeTtlv = runGet parseTtlv
-
 
 encodeTtlv :: Ttlv -> L.ByteString
 encodeTtlv x = runPut $ unparseTtlv x

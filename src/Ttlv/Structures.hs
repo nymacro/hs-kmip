@@ -12,11 +12,6 @@ import Data.Either
 
 newtype TtlvParser a = TtlvParser { runTtlvParser :: (a -> Either [String] a) }
 
--- instance Monad TtlvParser where
---   return  = TtlvParser
---   -- m a -> (a -> m b) -> m b
---   x >>= y = x <+> (return . y)
-
 -- | Ttlv parser combinator
 infixl 9 <+>
 (<+>) :: TtlvParser Ttlv -> TtlvParser Ttlv -> TtlvParser Ttlv

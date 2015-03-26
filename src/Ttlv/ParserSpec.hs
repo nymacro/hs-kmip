@@ -95,14 +95,3 @@ spec = do
           decodeTtlv (testTtlvs !! 8) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvInterval 864000))
         it "should decode Structure" $ do
           decodeTtlv (testTtlvs !! 9) `shouldBe` (Ttlv TtlvCompromiseDate (TtlvStructure [Ttlv TtlvApplicationSpecificInformation (TtlvEnum 254), Ttlv TtlvArchiveDate (TtlvInt 255)]))
-    describe "validation" $ do
-      it "should validate protocol version" $ do
-        validateProtocolVersion (protocolVersion 1 0) `shouldBe` True
-        validateProtocolVersion (protocolVersion 1 1) `shouldBe` True
-        validateProtocolVersion (protocolVersion 1 2) `shouldBe` True
-        validateProtocolVersion (Ttlv TtlvProtocolVersion (TtlvStructure [Ttlv TtlvCompromiseDate (TtlvInt 1), Ttlv TtlvProtocolVersionMinor (TtlvInt 0)])) `shouldBe` False
-        validateProtocolVersion (Ttlv TtlvProtocolVersion (TtlvStructure [Ttlv TtlvProtocolVersionMajor (TtlvInt 1), Ttlv TtlvProtocolVersionMinor (TtlvBool True)])) `shouldBe` True
-
--- main :: IO ()
--- main = do
---   mapM_ (putStrLn . show . decodeTtlv) testTtlvs
