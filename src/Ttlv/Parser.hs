@@ -133,9 +133,9 @@ ttlvDataType (TtlvDateTime _) = 9
 ttlvDataType (TtlvInterval _) = 10
 
 ttlvDataLength :: TtlvData -> Int
-ttlvDataLength (TtlvStructure x) = if length x == 0
+ttlvDataLength (TtlvStructure x) = if null x
                                    then 0 -- empty structure
-                                   else foldr1 (+) $ map ttlvLength x
+                                   else sum $ map ttlvLength x
 ttlvDataLength (TtlvInt _) = 4 -- w/o padding
 ttlvDataLength (TtlvLongInt _) = 8
 ttlvDataLength (TtlvBigInt x) = CN.lengthBytes x -- w/o padding

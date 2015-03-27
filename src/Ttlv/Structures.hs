@@ -1,6 +1,5 @@
 -- KMIP Structure Validation
-
-{-# LANGUAGE TemplateHaskell #-}
+-- {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeOperators #-}
 module Ttlv.Structures where
 
@@ -10,7 +9,7 @@ import Control.Lens
 import qualified Data.List as L
 import Data.Either
 
-newtype TtlvParser a = TtlvParser { runTtlvParser :: (a -> Either [String] a) }
+newtype TtlvParser a = TtlvParser { runTtlvParser :: a -> Either [String] a }
 
 -- | Ttlv parser combinator
 infixl 9 <+>
@@ -26,7 +25,7 @@ either x y = TtlvParser $ \t -> case runTtlvParser x t of
   x'@(Right _) -> x'
   Left e -> case runTtlvParser y t of
     y'@(Right _) -> y'
-    Left e' -> Left $ ["neither matched: " ++ concat e ++ " | " ++ concat e']
+    Left e' -> Left ["neither matched: " ++ concat e ++ " | " ++ concat e']
 
 (<|>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
 (<|>) = Ttlv.Structures.either
@@ -43,7 +42,7 @@ check msg f = TtlvParser $ \t -> if f t
 -- | the struct if it parses without error; otherwise return error
 struct :: TtlvParser Ttlv -> Ttlv -> TtlvParser Ttlv
 struct p t = TtlvParser $ \t ->
-  case (getTtlvData t) ^? _TtlvStructure of
+  case getTtlvData t ^? _TtlvStructure of
     (Just s) -> if 1 == length s
                 then runTtlvParser p (head s)
                 else Left ["couldn't find structure"]
@@ -63,7 +62,7 @@ struct p t = TtlvParser $ \t ->
 -- | find a tag from structure
 find :: TtlvTag -> TtlvParser Ttlv
 find tag = TtlvParser $ \t ->
-  case (getTtlvData t) ^? _TtlvStructure of
+  case getTtlvData t ^? _TtlvStructure of
     Nothing -> Left ["not a structure " ++ show tag]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
@@ -81,7 +80,7 @@ fromRight (Right x) = x
 -- | zero-many
 many :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many tag v = TtlvParser $ \t ->
-  case (getTtlvData t) ^? _TtlvStructure of
+  case getTtlvData t ^? _TtlvStructure of
     Nothing -> Left ["not a structure"]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Right t
@@ -89,13 +88,13 @@ many tag v = TtlvParser $ \t ->
                 errors = filter isLeft eithers
             in if all isRight eithers
                then Right t
-               else Left $ ["not everything matched for tag " ++ show tag] ++ (concat $ map fromLeft errors)
+               else Left $ ("not everything matched for tag " ++ show tag) : concatMap fromLeft errors
 
 -- | on: Ttlv
 -- | one-many
 many1 :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many1 tag v = TtlvParser $ \t ->
-  case (getTtlvData t) ^? _TtlvStructure of
+  case getTtlvData t ^? _TtlvStructure of
     Nothing -> Left ["not a structure" ++ show tag]
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
@@ -103,7 +102,7 @@ many1 tag v = TtlvParser $ \t ->
                 errors = filter isLeft eithers
             in if all isRight eithers
                then Right t
-               else Left $ ["not everything matched for tag " ++ show tag] ++ (concat $ map fromLeft errors)
+               else Left $ ("not everything matched for tag " ++ show tag) : concatMap fromLeft errors
 
 -- | on: Ttlv
 -- | check current Ttlv tag
