@@ -67,7 +67,7 @@ find tag = TtlvParser $ \t ->
     Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
       xs -> if length xs /= 1
-            then Left ["too many/too few"]
+            then Left ["too many/too few " ++ show tag]
             else Right $ head xs
 
 fromLeft (Left x) = x

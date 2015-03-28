@@ -196,6 +196,13 @@ data PaddingMethod = None
 instance TtlvEnumType PaddingMethod where
   ttlvEnumTag _ = TtlvPaddingMethod
 
+data Operation = Create
+               | CreateKeyPair
+               | Register
+               | ReKey
+               deriving (Show, Eq, Enum)
+instance TtlvEnumType Operation where
+  ttlvEnumTag _ = TtlvOperation
 
 -- test :: IO ()
 -- test = do
