@@ -1,65 +1,66 @@
 -- KMIP Objects
 module Ttlv.Objects  where
 
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Data
 import Ttlv.Structures
 
 attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
-attribute name vf = tag TtlvAttribute <+>
-                    apply    TtlvAttributeName (stringEq name) <+>
-                    apply    TtlvAttributeValue vf <+>
-                    optional TtlvAttributeIndex tint
+attribute name vf = tag T.Attribute <+>
+                    apply    T.AttributeName (stringEq name) <+>
+                    apply    T.AttributeValue vf <+>
+                    optional T.AttributeIndex tint
 
 attribute_ :: TtlvParser Ttlv
-attribute_ = tag TtlvAttribute <+>
-             apply    TtlvAttributeName ok <+>
-             apply    TtlvAttributeValue ok <+>
-             optional TtlvAttributeIndex tint
+attribute_ = tag T.Attribute <+>
+             apply    T.AttributeName ok <+>
+             apply    T.AttributeValue ok <+>
+             optional T.AttributeIndex tint
 
 credential :: TtlvParser Ttlv
-credential = tag TtlvCredential <+>
-             apply TtlvCredentialType tenum <+>
-             apply TtlvCredentialValue credentialValue
+credential = tag T.Credential <+>
+             apply T.CredentialType tenum <+>
+             apply T.CredentialValue credentialValue
 
 credentialValue :: TtlvParser Ttlv
-credentialValue = apply TtlvUsername string <+> apply TtlvPassword string
+credentialValue = apply T.Username string <+>
+                  apply T.Password string
 
 keyBlock :: TtlvParser Ttlv
-keyBlock = tag      TtlvKeyBlock <+>
-           apply    TtlvKeyFormatType tenum <+>
-           optional TtlvKeyCompressionType tenum <+>
-           apply    TtlvKeyValue keyValue <+>
-           optional TtlvCryptographicAlgorithm tenum <+> -- FIXME
-           optional TtlvCryptographicLength tint <+>  -- FIXME
-           optional TtlvKeyWrappingData tstruct -- FIXME
+keyBlock = tag      T.KeyBlock <+>
+           apply    T.KeyFormatType tenum <+>
+           optional T.KeyCompressionType tenum <+>
+           apply    T.KeyValue keyValue <+>
+           optional T.CryptographicAlgorithm tenum <+> -- FIXME
+           optional T.CryptographicLength tint <+>  -- FIXME
+           optional T.KeyWrappingData tstruct -- FIXME
            
 keyValue :: TtlvParser Ttlv
-keyValue = apply    TtlvKeyMaterial keyMaterial <+>
-           many     TtlvAttribute   attribute_
+keyValue = apply    T.KeyMaterial keyMaterial <+>
+           many     T.Attribute   attribute_
 
 keyWrappingData :: TtlvParser Ttlv
-keyWrappingData = --tag      TtlvWrappingData <+>
-                  apply    TtlvWrappingMethod tenum <+>
-                  optional TtlvEncryptionKeyInformation encryptionKeyInfo <+>
-                  optional TtlvMACSignatureKeyInformation macSignatureKeyInfo <+>
-                  optional TtlvMACSignature tbytestring <+>
-                  optional TtlvIVCounterNonce tbytestring
+keyWrappingData = --tag      T.WrappingData <+>
+                  apply    T.WrappingMethod tenum <+>
+                  optional T.EncryptionKeyInformation encryptionKeyInfo <+>
+                  optional T.MACSignatureKeyInformation macSignatureKeyInfo <+>
+                  optional T.MACSignature tbytestring <+>
+                  optional T.IVCounterNonce tbytestring
 
 encryptionKeyInfo :: TtlvParser Ttlv
-encryptionKeyInfo = apply    TtlvUniqueIdentifier tstring <+>
-                    optional TtlvCryptographicParameters tstruct
+encryptionKeyInfo = apply    T.UniqueIdentifier tstring <+>
+                    optional T.CryptographicParameters tstruct
 
 macSignatureKeyInfo :: TtlvParser Ttlv
-macSignatureKeyInfo = apply    TtlvUniqueIdentifier tstring <+>
-                      optional TtlvCryptographicParameters tstruct
+macSignatureKeyInfo = apply    T.UniqueIdentifier tstring <+>
+                      optional T.CryptographicParameters tstruct
 
 
 keyWrappingSpec :: TtlvParser Ttlv
-keyWrappingSpec = apply    TtlvWrappingMethod tenum <+>
-                  optional TtlvEncryptionKeyInformation tstruct <+>
-                  optional TtlvMACSignatureKeyInformation tstruct <+>
-                  many     TtlvAttribute attribute_
+keyWrappingSpec = apply    T.WrappingMethod tenum <+>
+                  optional T.EncryptionKeyInformation tstruct <+>
+                  optional T.MACSignatureKeyInformation tstruct <+>
+                  many     T.Attribute attribute_
 
 keyMaterial :: TtlvParser Ttlv
 keyMaterial = keyMaterialSymmetricKey <|>
@@ -69,89 +70,89 @@ keyMaterial = keyMaterialSymmetricKey <|>
               keyMaterialRSAPublicKey
 
 keyMaterialSymmetricKey :: TtlvParser Ttlv
-keyMaterialSymmetricKey = apply TtlvKey tbytestring
+keyMaterialSymmetricKey = apply T.Key tbytestring
 
 keyMaterialDSAPrivateKey :: TtlvParser Ttlv
-keyMaterialDSAPrivateKey = apply TtlvP tbigint <+>
-                           apply TtlvQ tbigint <+>
-                           apply TtlvG tbigint <+>
-                           apply TtlvX tbigint
+keyMaterialDSAPrivateKey = apply T.P tbigint <+>
+                           apply T.Q tbigint <+>
+                           apply T.G tbigint <+>
+                           apply T.X tbigint
 
 keyMaterialDSAPublicKey :: TtlvParser Ttlv
-keyMaterialDSAPublicKey = apply TtlvP tbigint <+>
-                          apply TtlvQ tbigint <+>
-                          apply TtlvG tbigint <+>
-                          apply TtlvY tbigint
+keyMaterialDSAPublicKey = apply T.P tbigint <+>
+                          apply T.Q tbigint <+>
+                          apply T.G tbigint <+>
+                          apply T.Y tbigint
 
 keyMaterialRSAPrivateKey :: TtlvParser Ttlv
-keyMaterialRSAPrivateKey = optional TtlvModulus tbigint <+>
-                           optional TtlvPrivateExponent tbigint <+>
-                           optional TtlvPublicExponent tbigint <+>
-                           optional TtlvP tbigint <+>
-                           optional TtlvQ tbigint <+>
-                           optional TtlvPrimeExponentP tbigint <+>
-                           optional TtlvPrimeExponentQ tbigint <+>
-                           optional TtlvCRTCoefficient tbigint
+keyMaterialRSAPrivateKey = optional T.Modulus tbigint <+>
+                           optional T.PrivateExponent tbigint <+>
+                           optional T.PublicExponent tbigint <+>
+                           optional T.P tbigint <+>
+                           optional T.Q tbigint <+>
+                           optional T.PrimeExponentP tbigint <+>
+                           optional T.PrimeExponentQ tbigint <+>
+                           optional T.CRTCoefficient tbigint
 
 keyMaterialRSAPublicKey :: TtlvParser Ttlv
-keyMaterialRSAPublicKey = apply TtlvModulus tbigint <+>
-                          apply TtlvPublicExponent tbigint
+keyMaterialRSAPublicKey = apply T.Modulus tbigint <+>
+                          apply T.PublicExponent tbigint
 
 -- TODO DH/ECDSA/ECDH/ECMQV key materials
 
 templateAttribute :: TtlvParser Ttlv
-templateAttribute = optional TtlvName tstruct <+>
-                    optional TtlvAttribute attribute_
+templateAttribute = optional T.Name tstruct <+>
+                    optional T.Attribute attribute_
 
 
 -- Managed Objects
 certificate :: TtlvParser Ttlv
-certificate = tag   TtlvCertificate <+>
-              apply TtlvCertificateType tenum <+>
-              apply TtlvCertificateValue tbytestring
+certificate = tag   T.Certificate <+>
+              apply T.CertificateType tenum <+>
+              apply T.CertificateValue tbytestring
 
 -- TODO fix key block expectations
 symmetricKey :: TtlvParser Ttlv
-symmetricKey = tag   TtlvSymmetricKey <+>
-               apply TtlvKeyBlock keyBlock
+symmetricKey = tag   T.SymmetricKey <+>
+               apply T.KeyBlock keyBlock
 
 publicKey :: TtlvParser Ttlv
-publicKey = tag   TtlvPublicKey <+>
-            apply TtlvKeyBlock keyBlock
+publicKey = tag   T.PublicKey <+>
+            apply T.KeyBlock keyBlock
 
 privateKey :: TtlvParser Ttlv
-privateKey = tag   TtlvPrivateKey <+>
-             apply TtlvKeyBlock keyBlock
+privateKey = tag   T.PrivateKey <+>
+             apply T.KeyBlock keyBlock
 
 splitKey :: TtlvParser Ttlv
-splitKey = tag   TtlvSplitKey <+>
-           apply TtlvSplitKeyParts tint <+>
-           apply TtlvKeyPartIdentifier tint <+>
-           apply TtlvSplitKeyThreshold tint <+>
-           apply TtlvSplitKeyMethod tenum <+>
-           apply TtlvPrimeFieldSize tbigint <+>
-           apply TtlvKeyBlock keyBlock
+splitKey = tag   T.SplitKey <+>
+           apply T.SplitKeyParts tint <+>
+           apply T.KeyPartIdentifier tint <+>
+           apply T.SplitKeyThreshold tint <+>
+           apply T.SplitKeyMethod tenum <+>
+           apply T.PrimeFieldSize tbigint <+>
+           apply T.KeyBlock keyBlock
 
 template :: TtlvParser Ttlv
-template = tag   TtlvTemplate <+>
-           many  TtlvAttribute attribute_
+template = tag   T.Template <+>
+           many  T.Attribute attribute_
 
 
 secretData :: TtlvParser Ttlv
-secretData = tag   TtlvSecretData <+>
-             apply TtlvSecretDataType tenum <+>
-             apply TtlvKeyBlock keyBlock
+secretData = tag   T.SecretData <+>
+             apply T.SecretDataType tenum <+>
+             apply T.KeyBlock keyBlock
 
 opaqueObject :: TtlvParser Ttlv
-opaqueObject = tag   TtlvOpaqueObject <+>
-               apply TtlvOpaqueDataType tenum <+>
-               apply TtlvOpaqueDataValue tbytestring
+opaqueObject = tag   T.OpaqueObject <+>
+               apply T.OpaqueDataType tenum <+>
+               apply T.OpaqueDataValue tbytestring
 
-cryptoObject = apply TtlvCertificate certificate <|>
-               apply TtlvSymmetricKey symmetricKey <|>
-               apply TtlvPublicKey publicKey <|>
-               apply TtlvPrivateKey privateKey <|>
-               apply TtlvSplitKey splitKey <|>
-               apply TtlvTemplate template <|>
-               apply TtlvSecretData secretData <|>
-               apply TtlvOpaqueObject opaqueObject
+cryptoObject = apply T.Certificate certificate <|>
+               apply T.SymmetricKey symmetricKey <|>
+               apply T.PublicKey publicKey <|>
+               apply T.PrivateKey privateKey <|>
+               apply T.SplitKey splitKey <|>
+               apply T.Template template <|>
+               apply T.SecretData secretData <|>
+               apply T.OpaqueObject opaqueObject

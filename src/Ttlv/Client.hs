@@ -1,6 +1,6 @@
 module Ttlv.Client where
 
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Data
 import Ttlv.Parser
 -- import Ttlv.Message
@@ -13,38 +13,40 @@ import qualified Data.ByteString.Lazy as L
 data Attribute         = Attribute String TtlvData
 type TemplateAttribute = [Attribute]
 
+
+
 attributeToTtlv :: Attribute -> Ttlv
-attributeToTtlv (Attribute n v) = structure TtlvAttribute [ tag TtlvAttributeName n
-                                                          , Ttlv TtlvAttributeValue v ]
+attributeToTtlv (Attribute n v) = structure T.Attribute [ tag T.AttributeName n
+                                                        , Ttlv (T.Tag T.AttributeValue) v ]
 
 attribute :: (TtlvBoxable a) => String -> a -> Ttlv
-attribute n v = structure TtlvAttribute [ tag TtlvAttributeName n
-                                        , tag TtlvAttributeValue v ]
+attribute n v = structure T.Attribute [ tag T.AttributeName n
+                                      , tag T.AttributeValue v ]
 
-templateAttributeToTtlv :: TtlvTag -> TemplateAttribute -> Ttlv
-templateAttributeToTtlv tag xs = Ttlv tag (TtlvStructure (fmap attributeToTtlv xs))
+templateAttributeToTtlv :: T.TtlvTag -> TemplateAttribute -> Ttlv
+templateAttributeToTtlv tag xs = Ttlv (T.Tag tag) (TtlvStructure (fmap attributeToTtlv xs))
 
-tag :: (TtlvBoxable a) => TtlvTag -> a -> Ttlv
-tag t x = Ttlv t (box x)
+tag :: (TtlvBoxable a) => T.TtlvTag -> a -> Ttlv
+tag t x = Ttlv (T.Tag t) (box x)
 
-int :: TtlvTag -> Int -> Ttlv
-int tag = Ttlv tag . TtlvInt
+int :: T.TtlvTag -> Int -> Ttlv
+int tag = Ttlv (T.Tag tag) . TtlvInt
 
-batchCount = int TtlvBatchCount
+batchCount = int T.BatchCount
 
-structure :: TtlvTag -> [Ttlv] -> Ttlv
-structure tag = Ttlv tag . TtlvStructure
+structure :: T.TtlvTag -> [Ttlv] -> Ttlv
+structure tag = Ttlv (T.Tag tag) . TtlvStructure
 
 protocol :: Int -> Int -> Ttlv
-protocol maj min = structure TtlvProtocolVersion [ tag TtlvProtocolVersionMajor maj
-                                                 , tag TtlvProtocolVersionMinor min]
+protocol maj min = structure T.ProtocolVersion [ tag T.ProtocolVersionMajor maj
+                                               , tag T.ProtocolVersionMinor min]
 
-requestMessage = structure TtlvRequestMessage
-requestHeader = structure TtlvRequestHeader
-batchItem = structure TtlvBatchItem
+requestMessage = structure T.RequestMessage
+requestHeader = structure T.RequestHeader
+batchItem = structure T.BatchItem
 
-enum :: (TtlvEnumType a) => TtlvTag ->  a -> Ttlv
-enum t e = Ttlv t (toTtlvEnumType e)
+enum :: (TtlvEnumType a) => T.TtlvTag ->  a -> Ttlv
+enum t e = Ttlv (T.Tag t) (toTtlvEnumType e)
 
 defaultTemplate :: TemplateAttribute
 defaultTemplate = []
@@ -54,21 +56,21 @@ defaultTemplate = []
 create :: ObjectType -> TemplateAttribute -> Ttlv
 create o t = requestMessage [ requestHeader [ protocol 1 0
                                             , batchCount 1]
-                            , batchItem [ enum TtlvOperation Create
-                                        , structure TtlvRequestPayload payload
+                            , batchItem [ enum T.Operation Create
+                                        , structure T.RequestPayload payload
                                           ] ]
-  where payload = [ enum TtlvObjectType o
-                  , templateAttributeToTtlv TtlvTemplateAttribute t]
+  where payload = [ enum T.ObjectType o
+                  , templateAttributeToTtlv T.TemplateAttribute t]
 
 createKeyPair :: TemplateAttribute -> TemplateAttribute -> TemplateAttribute -> Ttlv
 createKeyPair com priv pub = requestMessage [ requestHeader [ protocol 1 0
                                                             , batchCount 1 ]
-                                            , batchItem [ enum TtlvOperation CreateKeyPair
-                                                        , structure TtlvRequestPayload payload
+                                            , batchItem [ enum T.Operation CreateKeyPair
+                                                        , structure T.RequestPayload payload
                                                         ] ]
-  where payload = [ templateAttributeToTtlv TtlvCommonTemplateAttribute com
-                  , templateAttributeToTtlv TtlvPrivateKeyTemplateAttribute priv
-                  , templateAttributeToTtlv TtlvPublicKeyTemplateAttribute pub ]
+  where payload = [ templateAttributeToTtlv T.CommonTemplateAttribute com
+                  , templateAttributeToTtlv T.PrivateKeyTemplateAttribute priv
+                  , templateAttributeToTtlv T.PublicKeyTemplateAttribute pub ]
 
 -- TODO actual connection context and communication
 

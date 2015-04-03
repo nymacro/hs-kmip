@@ -1,7 +1,7 @@
 -- KMIP Client-to-Server operations
 module Ttlv.Operations where
 
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Data
 import Ttlv.Structures
 import Ttlv.Objects
@@ -51,74 +51,74 @@ responseOperation = createResponse <|>
                     locateResponse <|>
                     checkResponse
 
-createRequest = apply TtlvObjectType tenum <+>
-                apply TtlvTemplateAttribute templateAttribute
+createRequest = apply T.ObjectType tenum <+>
+                apply T.TemplateAttribute templateAttribute
 
-createResponse = apply TtlvObjectType tenum <+>
-                 apply TtlvUniqueIdentifier uniqueIdentifier <+>
-                 optional TtlvTemplateAttribute templateAttribute
+createResponse = apply T.ObjectType tenum <+>
+                 apply T.UniqueIdentifier uniqueIdentifier <+>
+                 optional T.TemplateAttribute templateAttribute
 
-createKeyPairRequest = optional TtlvCommonTemplateAttribute templateAttribute <+>
-                       optional TtlvPrivateKeyTemplateAttribute templateAttribute <+>
-                       optional TtlvPublicKeyTemplateAttribute templateAttribute
+createKeyPairRequest = optional T.CommonTemplateAttribute templateAttribute <+>
+                       optional T.PrivateKeyTemplateAttribute templateAttribute <+>
+                       optional T.PublicKeyTemplateAttribute templateAttribute
 
-createKeyPairResponse = apply TtlvPrivateKeyUniqueIdentifier uniqueIdentifier <+>
-                        apply TtlvPublicKeyUniqueIdentifier uniqueIdentifier <+>
-                        optional TtlvPrivateKeyTemplateAttribute templateAttribute <+>
-                        optional TtlvPublicKeyTemplateAttribute templateAttribute
+createKeyPairResponse = apply T.PrivateKeyUniqueIdentifier uniqueIdentifier <+>
+                        apply T.PublicKeyUniqueIdentifier uniqueIdentifier <+>
+                        optional T.PrivateKeyTemplateAttribute templateAttribute <+>
+                        optional T.PublicKeyTemplateAttribute templateAttribute
 
-registerRequest = apply TtlvObjectType tenum <+>
-                  apply TtlvTemplateAttribute templateAttribute <+>
+registerRequest = apply T.ObjectType tenum <+>
+                  apply T.TemplateAttribute templateAttribute <+>
                   cryptoObject
 
-registerResponse = apply TtlvUniqueIdentifier uniqueIdentifier <+>
-                   optional TtlvTemplateAttribute templateAttribute
+registerResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
+                   optional T.TemplateAttribute templateAttribute
 
-reKeyRequest = optional TtlvUniqueIdentifier uniqueIdentifier <+>
-               optional TtlvOffset tinterval <+>
-               optional TtlvTemplateAttribute templateAttribute
+reKeyRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
+               optional T.Offset tinterval <+>
+               optional T.TemplateAttribute templateAttribute
 
-reKeyResponse = apply TtlvUniqueIdentifier uniqueIdentifier <+>
-                optional TtlvTemplateAttribute templateAttribute
+reKeyResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
+                optional T.TemplateAttribute templateAttribute
 
 deriveKeyRequest = nok "derive key not implemented"
 deriveKeyResponse = nok "derive key not implemented"
 
-certifyRequest  = optional TtlvUniqueIdentifier uniqueIdentifier <+>
-                  apply TtlvCertificateRequestType tenum <+>
-                  apply TtlvCertificateRequest tbytestring <+>
-                  optional TtlvTemplateAttribute templateAttribute
+certifyRequest  = optional T.UniqueIdentifier uniqueIdentifier <+>
+                  apply T.CertificateRequestType tenum <+>
+                  apply T.CertificateRequest tbytestring <+>
+                  optional T.TemplateAttribute templateAttribute
 
-certifyResponse = apply TtlvUniqueIdentifier uniqueIdentifier <+>
-                  optional TtlvTemplateAttribute templateAttribute
+certifyResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
+                  optional T.TemplateAttribute templateAttribute
 
 reCertifyRequest = nok "re-certify not implemented"
 reCertifyResponse = nok "re-certify not implemented"
 
 
-locateRequest = optional TtlvMaximumItems tint <+>
-                optional TtlvStorageStatusMask tint <+>
-                many TtlvAttribute attribute_
+locateRequest = optional T.MaximumItems tint <+>
+                optional T.StorageStatusMask tint <+>
+                many T.Attribute attribute_
 
-locateResponse = many TtlvUniqueIdentifier uniqueIdentifier
+locateResponse = many T.UniqueIdentifier uniqueIdentifier
 
-checkRequest = optional TtlvUniqueIdentifier uniqueIdentifier <+>
-               optional TtlvUsageLimitsCount tint <+> -- ???
-               optional TtlvCryptographicUsageMask tint <+>
-               optional TtlvLeaseTime tinterval -- ???
+checkRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
+               optional T.UsageLimitsCount tint <+> -- ???
+               optional T.CryptographicUsageMask tint <+>
+               optional T.LeaseTime tinterval -- ???
 
-checkResponse = apply TtlvUniqueIdentifier uniqueIdentifier <+>
-                optional TtlvUsageLimitsCount tint <+> -- ???
-                optional TtlvCryptographicUsageMask tint <+>
-                optional TtlvLeaseTime tinterval -- ???
+checkResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
+                optional T.UsageLimitsCount tint <+> -- ???
+                optional T.CryptographicUsageMask tint <+>
+                optional T.LeaseTime tinterval -- ???
                 
-getRequest = optional TtlvUniqueIdentifier uniqueIdentifier <+>
-             optional TtlvKeyFormatType tenum <+>
-             optional TtlvKeyCompressionType tenum <+>
-             optional TtlvKeyWrappingSpecification tenum
+getRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
+             optional T.KeyFormatType tenum <+>
+             optional T.KeyCompressionType tenum <+>
+             optional T.KeyWrappingSpecification tenum
 
-getResponse = apply TtlvObjectType tenum <+>
-              apply TtlvUniqueIdentifier uniqueIdentifier <+>
+getResponse = apply T.ObjectType tenum <+>
+              apply T.UniqueIdentifier uniqueIdentifier <+>
               cryptoObject
 
 -- TODO getAttributes

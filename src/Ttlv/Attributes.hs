@@ -2,126 +2,126 @@
 
 module Ttlv.Attributes where
 
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Data
 import Ttlv.Structures
 
 uniqueIdentifier :: TtlvParser Ttlv
-uniqueIdentifier = tag TtlvUniqueIdentifier <+>
+uniqueIdentifier = tag T.UniqueIdentifier <+>
                    tstring
 
 name :: TtlvParser Ttlv
-name = tag TtlvName <+>
-       apply TtlvNameValue tstring <+>
-       apply TtlvNameType tenum
+name = tag T.Name <+>
+       apply T.NameValue tstring <+>
+       apply T.NameType tenum
 
 objectType :: TtlvParser Ttlv
-objectType = tag TtlvObjectType <+>
+objectType = tag T.ObjectType <+>
              tenum
 
 cryptographicAlgorithm :: TtlvParser Ttlv
-cryptographicAlgorithm = tag TtlvCryptographicAlgorithm <+>
+cryptographicAlgorithm = tag T.CryptographicAlgorithm <+>
                          tenum
 
 cryptographicLength :: TtlvParser Ttlv
-cryptographicLength = tag TtlvCryptographicLength <+>
+cryptographicLength = tag T.CryptographicLength <+>
                       tint
 
-cryptographicParameters = tag TtlvCryptographicParameters <+>
-                          optional TtlvBlockCipherMode tenum <+>
-                          optional TtlvPaddingMethod tenum <+>
-                          optional TtlvHashingAlgorithm tenum <+>
-                          optional TtlvKeyRoleType tenum
+cryptographicParameters = tag T.CryptographicParameters <+>
+                          optional T.BlockCipherMode tenum <+>
+                          optional T.PaddingMethod tenum <+>
+                          optional T.HashingAlgorithm tenum <+>
+                          optional T.KeyRoleType tenum
 
-cryptographicDomainParameters = tag TtlvCryptographicDomainParameters <+>
-                                optional TtlvQlength tint <+>
-                                optional TtlvRecommendedCurve tenum
+cryptographicDomainParameters = tag T.CryptographicDomainParameters <+>
+                                optional T.Qlength tint <+>
+                                optional T.RecommendedCurve tenum
 
-certificateType = tag TtlvCertificateType <+>
+certificateType = tag T.CertificateType <+>
                   tenum
 
-certificateIdentifier = tag      TtlvCertificateIdentifier <+>
-                        apply    TtlvIssuer tstring <+>
-                        optional TtlvSerialNumber tstring
+certificateIdentifier = tag      T.CertificateIdentifier <+>
+                        apply    T.Issuer tstring <+>
+                        optional T.SerialNumber tstring
 
-certificateSubject = tag   TtlvCertificateSubject <+>
-                     apply TtlvCertificateSubjectDistinguishedName tstring <+>
-                     many  TtlvCertificateSubjectAlternativeName tstring
+certificateSubject = tag   T.CertificateSubject <+>
+                     apply T.CertificateSubjectDistinguishedName tstring <+>
+                     many  T.CertificateSubjectAlternativeName tstring
 
-certificateIssuer = tag   TtlvCertificateIssuer <+>
-                    apply TtlvCertificateIssuerDistinguishedName tstring <+>
-                    many  TtlvCertificateIssuerAlternativeName tstring
+certificateIssuer = tag   T.CertificateIssuer <+>
+                    apply T.CertificateIssuerDistinguishedName tstring <+>
+                    many  T.CertificateIssuerAlternativeName tstring
 
-digest = tag TtlvDigest <+>
-         apply TtlvHashingAlgorithm tenum <+>
-         apply TtlvDigestValue tbytestring
+digest = tag T.Digest <+>
+         apply T.HashingAlgorithm tenum <+>
+         apply T.DigestValue tbytestring
 
-operationPolicyName = tag TtlvOperationPolicyName <+>
+operationPolicyName = tag T.OperationPolicyName <+>
                       tstring
 
-cryptographicUsageMask = tag TtlvCryptographicUsageMask <+>
+cryptographicUsageMask = tag T.CryptographicUsageMask <+>
                          tint
 
-leaseTime = tag TtlvLeaseTime <+>
+leaseTime = tag T.LeaseTime <+>
             tinterval
 
-usageLimits = tag TtlvUsageLimits <+>
-              apply TtlvUsageLimitsTotal tlong <+>
-              apply TtlvUsageLimitsCount tlong <+>
-              apply TtlvUsageLimitsUnit tlong
+usageLimits = tag T.UsageLimits <+>
+              apply T.UsageLimitsTotal tlong <+>
+              apply T.UsageLimitsCount tlong <+>
+              apply T.UsageLimitsUnit tlong
 
-state = tag TtlvState <+>
+state = tag T.State <+>
         tenum
 
-initialDate = tag TtlvInitialDate <+>
+initialDate = tag T.InitialDate <+>
               tdatetime
 
-activationDate = tag TtlvActivationDate <+>
+activationDate = tag T.ActivationDate <+>
                  tdatetime
 
-processStartDate = tag TtlvProcessStartDate <+>
+processStartDate = tag T.ProcessStartDate <+>
                    tdatetime
 
-protectStopDate = tag TtlvProcessStartDate <+>
+protectStopDate = tag T.ProcessStartDate <+>
                   tdatetime
 
-deactivationDate = tag TtlvDeactivationDate <+>
+deactivationDate = tag T.DeactivationDate <+>
                    tdatetime
 
-destroyDate = tag TtlvDestroyDate <+>
+destroyDate = tag T.DestroyDate <+>
               tdatetime
 
-compromiseOccurrenceDate = tag TtlvCompromiseOccurrenceDate <+>
+compromiseOccurrenceDate = tag T.CompromiseOccurrenceDate <+>
                            tdatetime
 
-compromiseDate = tag TtlvCompromiseDate <+>
+compromiseDate = tag T.CompromiseDate <+>
                  tdatetime
 
-revocationReason = tag TtlvRevocationReason <+>
-                   apply TtlvRevocationReasonCode tenum <+>
-                   optional TtlvRevocationMessage tstring
+revocationReason = tag T.RevocationReason <+>
+                   apply T.RevocationReasonCode tenum <+>
+                   optional T.RevocationMessage tstring
 
-archiveDate = tag TtlvArchiveDate <+>
+archiveDate = tag T.ArchiveDate <+>
               tdatetime
 
-objectGroup = tag TtlvObjectGroup <+>
+objectGroup = tag T.ObjectGroup <+>
               tstring
 
-link = tag TtlvLink <+>
-       apply TtlvLinkType tenum <+>
-       apply TtlvLinkedObjectIdentifier tstring
+link = tag T.Link <+>
+       apply T.LinkType tenum <+>
+       apply T.LinkedObjectIdentifier tstring
 
-applicationSpecificInfo = tag TtlvApplicationSpecificInformation <+>
-                          apply TtlvApplicationNamespace tstring <+>
-                          apply TtlvApplicationData tstring
+applicationSpecificInfo = tag T.ApplicationSpecificInformation <+>
+                          apply T.ApplicationNamespace tstring <+>
+                          apply T.ApplicationData tstring
 
-contactInformation = tag TtlvContactInformation <+>
+contactInformation = tag T.ContactInformation <+>
                      tstring
 
-lastChangeDate = tag TtlvLastChangeDate <+>
+lastChangeDate = tag T.LastChangeDate <+>
                  tdatetime
 
-customAttribute = tag TtlvCustomAttribute <+>
+customAttribute = tag T.CustomAttribute <+>
                   ok -- TODO disallow sub-structures
 
 -- any attribute

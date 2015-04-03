@@ -3,50 +3,53 @@ module Ttlv.ObjectsSpec where
 import Test.Hspec
 
 import Ttlv.Data
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Objects
 import Ttlv.Structures
 import qualified Ttlv.Enum as TEnum
 
-xx = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-hi")
-                                        , Ttlv TtlvAttributeIndex (TtlvInt 0)
-                                        , Ttlv TtlvAttributeValue (TtlvString "hello world") ]))
-yy = (Ttlv TtlvAttribute (TtlvStructure [ Ttlv TtlvAttributeName (TtlvString "x-yo")
-                                        , Ttlv TtlvAttributeIndex (TtlvInt 1)
-                                        , Ttlv TtlvAttributeValue (TtlvString "sticker") ]))
+ttlv :: T.TtlvTag -> TtlvData -> Ttlv
+ttlv t d = Ttlv (T.Tag t) d
 
-zz = Ttlv TtlvCredential (TtlvStructure [ Ttlv TtlvCredentialType (TtlvEnum $ TEnum.fromTtlvEnum TEnum.UsernameAndPassword)
-                                        , Ttlv TtlvCredentialValue (TtlvStructure [ Ttlv TtlvUsername (TtlvString "aaron")
-                                                                                  , Ttlv TtlvPassword (TtlvString "password") ])])
+xx = ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
+                                     , ttlv T.AttributeIndex (TtlvInt 0)
+                                     , ttlv T.AttributeValue (TtlvString "hello world") ])
+yy = ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-yo")
+                                     , ttlv T.AttributeIndex (TtlvInt 1)
+                                     , ttlv T.AttributeValue (TtlvString "sticker") ])
+
+zz = ttlv T.Credential (TtlvStructure [ ttlv T.CredentialType (TtlvEnum $ TEnum.fromTtlvEnum TEnum.UsernameAndPassword)
+                                      , ttlv T.CredentialValue (TtlvStructure [ ttlv T.Username (TtlvString "aaron")
+                                                                              , ttlv T.Password (TtlvString "password") ])])
 
 
 spec :: Spec
 spec = do
   describe "Validator" $ do
     it "should sub-apply validators" $ do
-      let x = apply TtlvAttributeName (stringEq "x-hi")
+      let x = apply T.AttributeName (stringEq "x-hi")
       runTtlvParser x xx `shouldBe` Right xx
     it "should allow chaining of validators" $ do
-      let x = apply TtlvAttributeName (stringEq "x-hi")
-      let y = apply TtlvAttributeValue ok
+      let x = apply T.AttributeName (stringEq "x-hi")
+      let y = apply T.AttributeValue ok
       runTtlvParser (x <+> y) xx `shouldBe` Right xx
     it "should allow chaining of validators (alternation)" $ do
-      let x = apply TtlvAttributeName (stringEq "x-hi")
-          y = apply TtlvAttributeName (stringEq "x-yo")
+      let x = apply T.AttributeName (stringEq "x-hi")
+          y = apply T.AttributeName (stringEq "x-yo")
           p = x <|> y
       runTtlvParser p xx `shouldBe` Right xx
       runTtlvParser p yy `shouldBe` Right yy
     it "should fail bad matches" $ do
-      let x = apply TtlvAttributeName (stringEq "abc")
+      let x = apply T.AttributeName (stringEq "abc")
       runTtlvParser x xx `shouldBe` Left ["mismatch in expected value"]
     it "should allow many (one-many)" $ do
-      let xx' = (Ttlv TtlvAttribute (TtlvStructure [xx, yy]))
-      runTtlvParser (many1 TtlvAttribute attribute_) xx' `shouldBe` Right xx'
-      runTtlvParser (many1 TtlvArchiveDate attribute_) xx' `shouldBe` Left ["unable to find tag TtlvArchiveDate"]
+      let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
+      runTtlvParser (many1 T.Attribute attribute_) xx' `shouldBe` Right xx'
+      runTtlvParser (many1 T.ArchiveDate attribute_) xx' `shouldBe` Left ["unable to find tag ArchiveDate"]
     it "should allow many (zero-many)" $ do
-      let xx' = (Ttlv TtlvAttribute (TtlvStructure [xx, yy]))
-      runTtlvParser (many TtlvAttribute attribute_) xx' `shouldBe` Right xx'
-      runTtlvParser (many TtlvArchiveDate attribute_) xx' `shouldBe` Right xx'
+      let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
+      runTtlvParser (many T.Attribute attribute_) xx' `shouldBe` Right xx'
+      runTtlvParser (many T.ArchiveDate attribute_) xx' `shouldBe` Right xx'
 
     describe "Objects" $ do
       describe "Attribute" $ do

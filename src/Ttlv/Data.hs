@@ -23,10 +23,11 @@ data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
               deriving (Show, Eq)
 
 -- | Data type representing Ttlv-encoding of KMIP message
-data Ttlv = Ttlv { getTtlvTag :: TtlvTag, getTtlvData :: TtlvData }
-            deriving (Show, Eq)
+data Ttlv = Ttlv { getTtlvTag :: Tag, getTtlvData :: TtlvData }
+          deriving (Show, Eq)
 
 makeLenses ''Ttlv
+makeLenses ''Tag
 
 makePrisms ''TtlvData
 makePrisms ''TtlvTag

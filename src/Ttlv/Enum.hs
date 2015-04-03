@@ -1,5 +1,5 @@
 module Ttlv.Enum where
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Data
 
 -- import Test.Hspec
@@ -18,12 +18,12 @@ class Enum a => TtlvEnumType a where
   fromTtlvEnumType (TtlvEnum x) = Just $ toTtlvEnum x
   fromTtlvEnumType _ = Nothing
 
-  ttlvEnumTag :: a -> TtlvTag
+  ttlvEnumTag :: a -> T.TtlvTag
 
 data CredentialType = UsernameAndPassword
                     deriving (Show, Eq, Enum)
 instance TtlvEnumType CredentialType where
-  ttlvEnumTag _ = TtlvCredentialType
+  ttlvEnumTag _ = T.CredentialType
 
 data KeyCompressionType = ECPubKeyUncompressed
                         | ECPubKeyCompressedPrime
@@ -31,7 +31,7 @@ data KeyCompressionType = ECPubKeyUncompressed
                         | ECPubKeyHybrid
                         deriving (Show, Eq, Enum)
 instance TtlvEnumType KeyCompressionType where
-  ttlvEnumTag _ = TtlvKeyCompressionType
+  ttlvEnumTag _ = T.KeyCompressionType
 
 
 data KeyFormatType = Raw
@@ -55,7 +55,7 @@ data KeyFormatType = Raw
                    | ECMQVPublicKey
                    deriving (Show, Eq, Enum)
 instance TtlvEnumType KeyFormatType where
-  ttlvEnumTag _ = TtlvKeyFormatType
+  ttlvEnumTag _ = T.KeyFormatType
 
 
 data WrappingMethod = Encrypt
@@ -65,7 +65,7 @@ data WrappingMethod = Encrypt
                     | TR31
                     deriving (Show, Eq, Enum)
 instance TtlvEnumType WrappingMethod where
-  ttlvEnumTag _ = TtlvWrappingMethod
+  ttlvEnumTag _ = T.WrappingMethod
 
 
 data RecommendedCurve = P192 
@@ -85,14 +85,14 @@ data RecommendedCurve = P192
                       | B571 
                       deriving (Show, Eq, Enum)
 instance TtlvEnumType RecommendedCurve where
-  ttlvEnumTag _ = TtlvRecommendedCurve
+  ttlvEnumTag _ = T.RecommendedCurve
 
 
 data CertificateType = CertX509
                      | CertPGP
                      deriving (Show, Eq, Enum)
 instance TtlvEnumType CertificateType where
-  ttlvEnumTag _ = TtlvCertificateType
+  ttlvEnumTag _ = T.CertificateType
 
 
 data SplitKeyMethod = XOR
@@ -100,21 +100,21 @@ data SplitKeyMethod = XOR
                  | PolynomialSharingPrimeField
                  deriving (Show, Eq, Enum)
 instance TtlvEnumType SplitKeyMethod where
-  ttlvEnumTag _ = TtlvSplitKeyMethod
+  ttlvEnumTag _ = T.SplitKeyMethod
 
 
 data SecretDataType = Password
                     | Seed
                     deriving (Show, Eq, Enum)
 instance TtlvEnumType SecretDataType where
-  ttlvEnumTag _ = TtlvSecretDataType
+  ttlvEnumTag _ = T.SecretDataType
 
 
 data NameType = UninterpretedTextString
               | URI
               deriving (Show, Eq, Enum)
 instance TtlvEnumType NameType where
-  ttlvEnumTag _ = TtlvNameType
+  ttlvEnumTag _ = T.NameType
 
 
 data ObjectType = Certificate
@@ -127,7 +127,7 @@ data ObjectType = Certificate
                 | OpaqueObject
                 deriving (Show, Eq, Enum)
 instance TtlvEnumType ObjectType where
-  ttlvEnumTag _ = TtlvObjectType
+  ttlvEnumTag _ = T.ObjectType
 
 
 data CryptoAlgorithm = DES
@@ -157,7 +157,7 @@ data CryptoAlgorithm = DES
                      | Twofish
                      deriving (Show, Eq, Enum)
 instance TtlvEnumType CryptoAlgorithm where
-  ttlvEnumTag _ = TtlvCryptographicAlgorithm
+  ttlvEnumTag _ = T.CryptographicAlgorithm
 
 
 data BlockCipherMode = CBC 
@@ -179,7 +179,7 @@ data BlockCipherMode = CBC
                      | X9102AKW2 
                      deriving (Show, Eq, Enum)
 instance TtlvEnumType BlockCipherMode where
-  ttlvEnumTag _ = TtlvBlockCipherMode
+  ttlvEnumTag _ = T.BlockCipherMode
 
 
 data PaddingMethod = None 
@@ -194,7 +194,7 @@ data PaddingMethod = None
                    | PSS
                    deriving (Show, Eq, Enum)
 instance TtlvEnumType PaddingMethod where
-  ttlvEnumTag _ = TtlvPaddingMethod
+  ttlvEnumTag _ = T.PaddingMethod
 
 data Operation = Create
                | CreateKeyPair
@@ -202,7 +202,7 @@ data Operation = Create
                | ReKey
                deriving (Show, Eq, Enum)
 instance TtlvEnumType Operation where
-  ttlvEnumTag _ = TtlvOperation
+  ttlvEnumTag _ = T.Operation
 
 -- test :: IO ()
 -- test = do

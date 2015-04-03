@@ -64,7 +64,7 @@ find :: TtlvTag -> TtlvParser Ttlv
 find tag = TtlvParser $ \t ->
   case getTtlvData t ^? _TtlvStructure of
     Nothing -> Left ["not a structure " ++ show tag]
-    Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
+    Just s -> case filter (\t' -> getTtlvTag t' == Tag tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
       xs -> if length xs /= 1
             then Left ["too many/too few " ++ show tag]
@@ -82,7 +82,7 @@ many :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many tag v = TtlvParser $ \t ->
   case getTtlvData t ^? _TtlvStructure of
     Nothing -> Left ["not a structure"]
-    Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
+    Just s -> case filter (\t' -> getTtlvTag t' == Tag tag) s of
       [] -> Right t
       xs -> let eithers = map (runTtlvParser v) xs
                 errors = filter isLeft eithers
@@ -96,7 +96,7 @@ many1 :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many1 tag v = TtlvParser $ \t ->
   case getTtlvData t ^? _TtlvStructure of
     Nothing -> Left ["not a structure" ++ show tag]
-    Just s -> case filter (\t' -> getTtlvTag t' == tag) s of
+    Just s -> case filter (\t' -> getTtlvTag t' == Tag tag) s of
       [] -> Left ["unable to find tag " ++ show tag]
       xs -> let eithers = map (runTtlvParser v) xs
                 errors = filter isLeft eithers
@@ -107,7 +107,7 @@ many1 tag v = TtlvParser $ \t ->
 -- | on: Ttlv
 -- | check current Ttlv tag
 tag :: TtlvTag -> TtlvParser Ttlv
-tag tag' = TtlvParser $ \t -> if getTtlvTag t == tag'
+tag tag' = TtlvParser $ \t -> if getTtlvTag t == Tag tag'
                               then Right t
                               else Left ["current tag not " ++ show tag' ++ " but " ++ show (getTtlvTag t)]
 

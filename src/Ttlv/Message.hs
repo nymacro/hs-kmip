@@ -1,84 +1,84 @@
 module Ttlv.Message where
 
-import Ttlv.Tag
+import qualified Ttlv.Tag as T
 import Ttlv.Data
 import Ttlv.Structures
 import Ttlv.Objects
 import Ttlv.Operations
 
 -- Contents
-protocolVersion = tag TtlvProtocolVersion <+>
-                  apply TtlvProtocolVersionMajor tint <+>
-                  apply TtlvProtocolVersionMinor tint
+protocolVersion = tag T.ProtocolVersion <+>
+                  apply T.ProtocolVersionMajor tint <+>
+                  apply T.ProtocolVersionMinor tint
 
-operation = tag TtlvOperation <+> tenum
+operation = tag T.Operation <+> tenum
 
-maximumResponseSize = tag TtlvMaximumResponseSize <+> tint
+maximumResponseSize = tag T.MaximumResponseSize <+> tint
 
-uniqueBatchItemId = tag TtlvUniqueBatchItemID <+> tbytestring
+uniqueBatchItemId = tag T.UniqueBatchItemID <+> tbytestring
 
-timeStamp = tag TtlvTimeStamp <+> tdatetime
+timeStamp = tag T.TimeStamp <+> tdatetime
 
-authentication = tag TtlvAuthentication <+> credential
+authentication = tag T.Authentication <+> credential
 
-asynchronousIndicator = tag TtlvAsynchronousIndicator <+> tbool
+asynchronousIndicator = tag T.AsynchronousIndicator <+> tbool
 
-asynchronousCorrelationValue = tag TtlvAsynchronousCorrelationValue <+> tbytestring
+asynchronousCorrelationValue = tag T.AsynchronousCorrelationValue <+> tbytestring
 
-resultStatus = tag TtlvResultStatus <+> tenum
+resultStatus = tag T.ResultStatus <+> tenum
 
-resultReason = tag TtlvResultReason <+> tenum
+resultReason = tag T.ResultReason <+> tenum
 
-resultMessage = tag TtlvResultMessage <+> tstring
+resultMessage = tag T.ResultMessage <+> tstring
 
-batchOrderOption = tag TtlvBatchOrderOption <+> tbool
+batchOrderOption = tag T.BatchOrderOption <+> tbool
 
-batchErrorContinuationOption = tag TtlvBatchErrorContinuationOption <+> tenum
+batchErrorContinuationOption = tag T.BatchErrorContinuationOption <+> tenum
 
-batchCount = tag TtlvBatchCount <+> tint
+batchCount = tag T.BatchCount <+> tint
 
-batchItem = tag TtlvBatchItem <+> tstruct
+batchItem = tag T.BatchItem <+> tstruct
 
-messageExtension = tag TtlvMessageExtension <+>
-                   apply TtlvVendorIdentification tstring <+>
-                   apply TtlvCriticalityIndicator tbool <+>
-                   apply TtlvVendorExtension tstruct
+messageExtension = tag T.MessageExtension <+>
+                   apply T.VendorIdentification tstring <+>
+                   apply T.CriticalityIndicator tbool <+>
+                   apply T.VendorExtension tstruct
 
 -- Format
-requestMessage = tag TtlvRequestMessage <+> tstruct <+>
-                 apply TtlvRequestHeader requestHeader <+>
-                 many1 TtlvBatchItem requestBatchItem
+requestMessage = tag T.RequestMessage <+> tstruct <+>
+                 apply T.RequestHeader requestHeader <+>
+                 many1 T.BatchItem requestBatchItem
 
-responseMessage = tag TtlvResponseMessage <+> tstruct <+>
-                  apply TtlvResponseHeader responseHeader <+>
-                  many1 TtlvBatchItem responseBatchItem
+responseMessage = tag T.ResponseMessage <+> tstruct <+>
+                  apply T.ResponseHeader responseHeader <+>
+                  many1 T.BatchItem responseBatchItem
 
-requestHeader = tag TtlvRequestHeader <+>
-                apply TtlvProtocolVersion protocolVersion <+>
-                optional TtlvMaximumResponseSize  maximumResponseSize <+>
-                optional TtlvAsynchronousIndicator asynchronousIndicator <+>
-                optional TtlvAuthentication authentication <+>
-                optional TtlvBatchErrorContinuationOption batchErrorContinuationOption <+>
-                optional TtlvBatchOrderOption batchOrderOption <+>
-                optional TtlvTimeStamp timeStamp <+>
-                apply TtlvBatchCount batchCount
+requestHeader = tag T.RequestHeader <+>
+                apply T.ProtocolVersion protocolVersion <+>
+                optional T.MaximumResponseSize  maximumResponseSize <+>
+                optional T.AsynchronousIndicator asynchronousIndicator <+>
+                optional T.Authentication authentication <+>
+                optional T.BatchErrorContinuationOption batchErrorContinuationOption <+>
+                optional T.BatchOrderOption batchOrderOption <+>
+                optional T.TimeStamp timeStamp <+>
+                apply T.BatchCount batchCount
 
-requestBatchItem = tag TtlvBatchItem <+> tstruct <+>
-                   apply TtlvOperation operation <+>
-                   optional TtlvUniqueBatchItemID uniqueBatchItemId <+>
-                   apply TtlvRequestPayload requestOperation -- FIXME need to run specific
+requestBatchItem = tag T.BatchItem <+> tstruct <+>
+                   apply T.Operation operation <+>
+                   optional T.UniqueBatchItemID uniqueBatchItemId <+>
+                   apply T.RequestPayload requestOperation -- FIXME need to run specific
 
-responseHeader = tag TtlvResponseHeader <+>
-                 apply TtlvProtocolVersion protocolVersion <+>
-                 apply TtlvTimeStamp timeStamp <+>
-                 apply TtlvBatchCount batchCount
+responseHeader = tag T.ResponseHeader <+>
+                 apply T.ProtocolVersion protocolVersion <+>
+                 apply T.TimeStamp timeStamp <+>
+                 apply T.BatchCount batchCount
 
-responseBatchItem = tag TtlvBatchItem <+> tstruct <+>
-                    apply TtlvOperation operation <+>
-                    optional TtlvUniqueBatchItemID uniqueBatchItemId <+>
-                    apply TtlvResultStatus resultStatus <+>
-                    optional TtlvResultReason resultReason <+>
-                    optional TtlvResultMessage resultMessage <+>
-                    optional TtlvAsynchronousCorrelationValue asynchronousCorrelationValue <+>
-                    optional TtlvResponsePayload responseOperation <+>
-                    optional TtlvMessageExtension messageExtension
+responseBatchItem = tag T.BatchItem <+> tstruct <+>
+                    apply T.Operation operation <+>
+                    optional T.UniqueBatchItemID uniqueBatchItemId <+>
+                    apply T.ResultStatus resultStatus <+>
+                    optional T.ResultReason resultReason <+>
+                    optional T.ResultMessage resultMessage <+>
+                    optional T.AsynchronousCorrelationValue asynchronousCorrelationValue <+>
+                    optional T.ResponsePayload responseOperation <+>
+                    optional T.MessageExtension messageExtension

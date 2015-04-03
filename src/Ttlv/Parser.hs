@@ -105,7 +105,7 @@ parseTtlv = do
   let skipBytes = (8 - (len `rem` 8)) `rem` 8 -- FIXME maybe??
   when (skipBytes /= 0 && (fromIntegral typ `elem` [2, 5, 7, 8, 10])) $
     skip $ fromIntegral skipBytes
-  return $ Ttlv (toTtlvTag $ decodeTtlvTag tag)
+  return $ Ttlv (toTag $ decodeTtlvTag tag)
     (case fromIntegral typ of
         1  -> runGet parseTtlvStructure val
         2  -> runGet parseTtlvInt val
@@ -176,7 +176,7 @@ paddedTtlvDataLength x = ttlvDataLength x
 
 unparseTtlv :: Ttlv -> Put
 unparseTtlv (Ttlv t d) = do
-  putLazyByteString $ encodeTtlvTag $ fromTtlvTag t
+  putLazyByteString $ encodeTtlvTag $ fromTag t
   putWord8 $ fromIntegral $ ttlvDataType d
   -- this is terrible. Find a better way to do this
   let length = ttlvDataLength d
