@@ -6,82 +6,119 @@ import Ttlv.Structures
 import Ttlv.Objects
 import Ttlv.Operations
 
+import Debug.Trace (trace)
+
 -- Contents
-protocolVersion = tag T.ProtocolVersion <+>
-                  apply T.ProtocolVersionMajor tint <+>
-                  apply T.ProtocolVersionMinor tint
+protocolVersion = do
+  tag T.ProtocolVersion 
+  apply T.ProtocolVersionMajor tint 
+  apply T.ProtocolVersionMinor tint
 
-operation = tag T.Operation <+> tenum
+operation = do
+  tag T.Operation
+  tenum
 
-maximumResponseSize = tag T.MaximumResponseSize <+> tint
+maximumResponseSize = do
+  tag T.MaximumResponseSize
+  tint
 
-uniqueBatchItemId = tag T.UniqueBatchItemID <+> tbytestring
+uniqueBatchItemId = do
+  tag T.UniqueBatchItemID
+  tbytestring
 
-timeStamp = tag T.TimeStamp <+> tdatetime
+timeStamp = do
+  tag T.TimeStamp
+  tdatetime
 
-authentication = tag T.Authentication <+> credential
+authentication = do
+  tag T.Authentication <+> credential
 
-asynchronousIndicator = tag T.AsynchronousIndicator <+> tbool
+asynchronousIndicator = do
+  tag T.AsynchronousIndicator <+> tbool
 
-asynchronousCorrelationValue = tag T.AsynchronousCorrelationValue <+> tbytestring
+asynchronousCorrelationValue = do
+  tag T.AsynchronousCorrelationValue <+> tbytestring
 
-resultStatus = tag T.ResultStatus <+> tenum
+resultStatus = do
+  tag T.ResultStatus <+> tenum
 
-resultReason = tag T.ResultReason <+> tenum
+resultReason = do
+  tag T.ResultReason <+> tenum
 
-resultMessage = tag T.ResultMessage <+> tstring
+resultMessage = do
+  tag T.ResultMessage <+> tstring
 
-batchOrderOption = tag T.BatchOrderOption <+> tbool
+batchOrderOption = do
+  tag T.BatchOrderOption <+> tbool
 
-batchErrorContinuationOption = tag T.BatchErrorContinuationOption <+> tenum
+batchErrorContinuationOption = do
+  tag T.BatchErrorContinuationOption <+> tenum
 
-batchCount = tag T.BatchCount <+> tint
+batchCount = do
+  tag T.BatchCount <+> tint
 
-batchItem = tag T.BatchItem <+> tstruct
+batchItem = do
+  tag T.BatchItem <+> tstruct
 
-messageExtension = tag T.MessageExtension <+>
-                   apply T.VendorIdentification tstring <+>
-                   apply T.CriticalityIndicator tbool <+>
-                   apply T.VendorExtension tstruct
+messageExtension = do
+  tag T.MessageExtension 
+  apply T.VendorIdentification tstring 
+  apply T.CriticalityIndicator tbool 
+  apply T.VendorExtension tstruct
 
 -- Format
-requestMessage = tag T.RequestMessage <+> tstruct <+>
-                 apply T.RequestHeader requestHeader <+>
-                 many1 T.BatchItem requestBatchItem
+requestMessage = do
+  tag T.RequestMessage
+  tstruct 
+  apply T.RequestHeader requestHeader 
+  many1 T.BatchItem requestBatchItem
 
-responseMessage = tag T.ResponseMessage <+> tstruct <+>
-                  apply T.ResponseHeader responseHeader <+>
-                  many1 T.BatchItem responseBatchItem
+responseMessage = do
+  tag T.ResponseMessage
+  tstruct 
+  apply T.ResponseHeader responseHeader 
+  many1 T.BatchItem responseBatchItem
 
-requestHeader = tag T.RequestHeader <+>
-                apply T.ProtocolVersion protocolVersion <+>
-                optional T.MaximumResponseSize  maximumResponseSize <+>
-                optional T.AsynchronousIndicator asynchronousIndicator <+>
-                optional T.Authentication authentication <+>
-                optional T.BatchErrorContinuationOption batchErrorContinuationOption <+>
-                optional T.BatchOrderOption batchOrderOption <+>
-                optional T.TimeStamp timeStamp <+>
-                apply T.BatchCount batchCount
+requestHeader = do
+  tag T.RequestHeader 
+  apply T.ProtocolVersion protocolVersion 
+  optional T.MaximumResponseSize  maximumResponseSize 
+  optional T.AsynchronousIndicator asynchronousIndicator 
+  optional T.Authentication authentication 
+  optional T.BatchErrorContinuationOption batchErrorContinuationOption 
+  optional T.BatchOrderOption batchOrderOption 
+  optional T.TimeStamp timeStamp 
+  apply T.BatchCount batchCount
 
-requestBatchItem = tag T.BatchItem <+> tstruct <+>
-                   apply T.Operation operation <+>
-                   optional T.UniqueBatchItemID uniqueBatchItemId <+>
-                   apply T.RequestPayload requestOperation -- FIXME need to run specific
---                   applyIf request T.RequestPayload
---  where op = runTtlvParser $ tag T.Opperation x
---        request = requestOperationFor op
+requestBatchItem = do
+  tag T.BatchItem
+  tstruct
+  -- apply T.Operation operation 
+  op <- get T.Operation
+  optional T.UniqueBatchItemID uniqueBatchItemId 
+  trace (show op) ok
+  case op of
+    TtlvEnum op' -> apply T.RequestPayload (requestOperationFor op')
+    _ -> nok $ "unexpected operation type (got " ++ show op ++ ")"
 
-responseHeader = tag T.ResponseHeader <+>
-                 apply T.ProtocolVersion protocolVersion <+>
-                 apply T.TimeStamp timeStamp <+>
-                 apply T.BatchCount batchCount
+responseHeader = do
+  tag T.ResponseHeader 
+  apply T.ProtocolVersion protocolVersion 
+  apply T.TimeStamp timeStamp 
+  apply T.BatchCount batchCount
 
-responseBatchItem = tag T.BatchItem <+> tstruct <+>
-                    apply T.Operation operation <+>
-                    optional T.UniqueBatchItemID uniqueBatchItemId <+>
-                    apply T.ResultStatus resultStatus <+>
-                    optional T.ResultReason resultReason <+>
-                    optional T.ResultMessage resultMessage <+>
-                    optional T.AsynchronousCorrelationValue asynchronousCorrelationValue <+>
-                    optional T.ResponsePayload responseOperation <+>
-                    optional T.MessageExtension messageExtension
+responseBatchItem = do
+  tag T.BatchItem
+  tstruct
+  -- apply T.Operation operation 
+  op <- get T.Operation
+  optional T.UniqueBatchItemID uniqueBatchItemId 
+  apply T.ResultStatus resultStatus 
+  optional T.ResultReason resultReason 
+  optional T.ResultMessage resultMessage 
+  optional T.AsynchronousCorrelationValue asynchronousCorrelationValue 
+  -- TODO don't always have payload optional for everything
+  case op of
+    TtlvEnum op' -> optional T.ResponsePayload (responseOperationFor op')
+    _ -> nok $ "unexpected operation type (got " ++ show op ++ ")"
+  optional T.MessageExtension messageExtension

@@ -31,7 +31,7 @@ instance Monad (TtlvParser' a) where
   x >>= y = TtlvParser $ \t ->
     case runTtlvParser x t of
       Right t' -> runTtlvParser (y t') t -- is this right?
-      Left e   -> Left $ "failed bind" : e
+      Left e   -> Left $ "failed combinator" : e
 
 -- | Ttlv parser combinator
 infixl 9 <+>

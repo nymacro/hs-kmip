@@ -17,7 +17,7 @@ requestOperationFor t = case t of
   7 -> reCertifyRequest
   8 -> locateRequest
   9 -> checkRequest
-  _ -> undefined
+  _ -> ok -- TODO rest of operations
 
 requestOperation = createRequest <|>
                    createKeyPairRequest <|>
@@ -39,7 +39,7 @@ responseOperationFor t = case t of
   7 -> reCertifyResponse
   8 -> locateResponse
   9 -> checkResponse
-  _ -> undefined
+  _ -> ok -- TODO rest of operations
 
 responseOperation = createResponse <|>
                     createKeyPairResponse <|>
