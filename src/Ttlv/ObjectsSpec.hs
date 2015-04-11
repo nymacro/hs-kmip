@@ -8,6 +8,9 @@ import Ttlv.Objects
 import Ttlv.Structures
 import qualified Ttlv.Enum as TEnum
 
+import Debug.Trace (trace)
+import Control.Monad (when)
+
 ttlv :: T.TtlvTag -> TtlvData -> Ttlv
 ttlv t d = Ttlv (T.Tag t) d
 
@@ -26,31 +29,59 @@ zz = ttlv T.Credential (TtlvStructure [ ttlv T.CredentialType (TtlvEnum $ TEnum.
 spec :: Spec
 spec = do
   describe "Validator" $ do
-    it "should sub-apply validators" $ do
-      let x = apply T.AttributeName (stringEq "x-hi")
-      runTtlvParser x xx `shouldBe` Right xx
-    it "should allow chaining of validators" $ do
-      let x = apply T.AttributeName (stringEq "x-hi")
-      let y = apply T.AttributeValue ok
-      runTtlvParser (x <+> y) xx `shouldBe` Right xx
-    it "should allow chaining of validators (alternation)" $ do
-      let x = apply T.AttributeName (stringEq "x-hi")
-          y = apply T.AttributeName (stringEq "x-yo")
-          p = x <|> y
-      runTtlvParser p xx `shouldBe` Right xx
-      runTtlvParser p yy `shouldBe` Right yy
-    it "should fail bad matches" $ do
-      let x = apply T.AttributeName (stringEq "abc")
-      runTtlvParser x xx `shouldBe` Left ["mismatch in expected value"]
-    it "should allow many (one-many)" $ do
-      let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
-      runTtlvParser (many1 T.Attribute attribute_) xx' `shouldBe` Right xx'
-      runTtlvParser (many1 T.ArchiveDate attribute_) xx' `shouldBe` Left ["unable to find tag ArchiveDate"]
-    it "should allow many (zero-many)" $ do
-      let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
-      runTtlvParser (many T.Attribute attribute_) xx' `shouldBe` Right xx'
-      runTtlvParser (many T.ArchiveDate attribute_) xx' `shouldBe` Right xx'
+    describe "basic" $ do
+      it "should sub-apply validators" $ do
+        let x = apply T.AttributeName (stringEq "x-hi")
+        runTtlvParser x xx `shouldBe` Right xx
+      it "should allow chaining of validators" $ do
+        let x = apply T.AttributeName (stringEq "x-hi")
+        let y = apply T.AttributeValue ok
+        runTtlvParser (x <+> y) xx `shouldBe` Right xx
+      it "should allow chaining of validators (alternation)" $ do
+        let x = apply T.AttributeName (stringEq "x-hi")
+            y = apply T.AttributeName (stringEq "x-yo")
+            p = x <|> y
+        runTtlvParser p xx `shouldBe` Right xx
+        runTtlvParser p yy `shouldBe` Right yy
+      it "should fail bad matches" $ do
+        let x = apply T.AttributeName (stringEq "abc")
+        runTtlvParser x xx `shouldBe` Left ["mismatch in expected value"]
+      it "should allow many (one-many)" $ do
+        let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
+        runTtlvParser (many1 T.Attribute attribute_) xx' `shouldBe` Right xx'
+        runTtlvParser (many1 T.ArchiveDate attribute_) xx' `shouldBe` Left ["unable to find tag ArchiveDate"]
+      it "should allow many (zero-many)" $ do
+        let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
+        runTtlvParser (many T.Attribute attribute_) xx' `shouldBe` Right xx'
+        runTtlvParser (many T.ArchiveDate attribute_) xx' `shouldBe` Right xx'
 
+      it "should do monadic things" $ do
+        let p = do
+              tstruct
+              tag T.Attribute
+              apply T.AttributeName (stringEq "x-hi")
+        runTtlvParser p xx `shouldBe` Right xx
+        let xx' = ttlv T.TemplateAttribute (TtlvStructure [ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
+                                                                                           , ttlv T.AttributeValue (TtlvString "hello") ] ) ] )
+            p' = do
+              tstruct
+              apply T.Attribute $ do
+                tstruct
+                apply T.AttributeName  (stringEq "x-hi")
+                apply T.AttributeValue (stringEq "hello")
+        runTtlvParser p' xx' `shouldBe` Right xx'
+      it "should allow stuff to be pulled out" $ do
+        let xx' = ttlv T.TemplateAttribute (TtlvStructure [ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
+                                                                                           , ttlv T.AttributeValue (TtlvString "hello") ] ) ] )
+            p = do
+              tstruct
+              apply T.Attribute $ do
+                x <- get T.AttributeName
+                if x == TtlvString "x-hi"
+                then ok
+                else nok "couldn't extract"
+        runTtlvParser p xx' `shouldBe` Right xx'
+           
     describe "Objects" $ do
       describe "Attribute" $ do
         it "valid" $ do

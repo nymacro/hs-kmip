@@ -67,6 +67,9 @@ requestBatchItem = tag T.BatchItem <+> tstruct <+>
                    apply T.Operation operation <+>
                    optional T.UniqueBatchItemID uniqueBatchItemId <+>
                    apply T.RequestPayload requestOperation -- FIXME need to run specific
+--                   applyIf request T.RequestPayload
+--  where op = runTtlvParser $ tag T.Opperation x
+--        request = requestOperationFor op
 
 responseHeader = tag T.ResponseHeader <+>
                  apply T.ProtocolVersion protocolVersion <+>

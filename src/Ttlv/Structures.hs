@@ -1,6 +1,5 @@
 -- KMIP Structure Validation
--- {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeOperators, DeriveFunctor, FlexibleInstances #-}
 module Ttlv.Structures where
 
 import Ttlv.Tag
@@ -9,7 +8,30 @@ import Control.Lens
 import qualified Data.List as L
 import Data.Either
 
-newtype TtlvParser a = TtlvParser { runTtlvParser :: a -> Either [String] a }
+import Control.Applicative
+
+newtype TtlvParser' a b = TtlvParser { runTtlvParser :: a -> Either [String] b }
+                        deriving (Functor)
+type TtlvParser a = TtlvParser' a a
+
+-- derived instance looks like:
+-- instance Functor (TtlvParser' a) where
+--   fmap fn (TtlvParser x) = TtlvParser ((\b2 b3 -> fmap fn (b2 ((\b1 -> b1) b3))) x)
+--   -- simplified:
+--   fmap fn (TtlvParser x) = TtlvParser ((\a b -> fmap fn (a $ b)) x)
+
+instance Applicative (TtlvParser' a) where
+  pure x = TtlvParser (\_ -> Right x)
+  -- f (a -> b) -> f a -> f b
+  x <*> y = undefined -- TODO
+
+instance Monad (TtlvParser' a) where
+  return x = TtlvParser (\_ -> Right x)
+  -- m a -> (a -> m b) -> m b
+  x >>= y = TtlvParser $ \t ->
+    case runTtlvParser x t of
+      Right t' -> runTtlvParser (y t') t -- is this right?
+      Left e   -> Left $ "failed bind" : e
 
 -- | Ttlv parser combinator
 infixl 9 <+>
@@ -17,7 +39,7 @@ infixl 9 <+>
 x <+> y = TtlvParser $ \t ->
   case runTtlvParser x t of
     Right t' -> runTtlvParser y t'
-    Left e -> Left $ "failed combinator" : e
+    Left e   -> Left $ "failed combinator" : e
 
 -- | run one parser or the other
 either :: TtlvParser a -> TtlvParser a -> TtlvParser a
@@ -47,6 +69,7 @@ struct p t = TtlvParser $ \t ->
                 then runTtlvParser p (head s)
                 else Left ["couldn't find structure"]
     Nothing -> Left ["not a structure " ++ show t]
+
 
 -- | check if struct contains a specific tag
 -- struct1 :: (Ttlv -> Bool) -> TtlvParser Ttlv
@@ -191,6 +214,13 @@ apply tag parser = TtlvParser $ \t ->
       Left y' -> Left y'
     Left y  -> Left y
 
+-- applicative like
+applyIf :: TtlvParser Ttlv -> TtlvParser Ttlv
+applyIf f = TtlvParser $ \t ->
+  case runTtlvParser f t of
+    Right _ -> Right t
+    Left y' -> Left y'
+
 -- | on: Structure
 -- | like apply, but will run `parser` only if tag exists. Will pass
 -- | by default.
@@ -211,3 +241,10 @@ ok = TtlvParser $ \t -> Right t
 -- | return an error
 nok :: String -> TtlvParser Ttlv
 nok msg = TtlvParser $ \t -> Left [msg]
+
+-- | extract data from ttlv
+get :: TtlvTag -> TtlvParser' Ttlv TtlvData
+get tag = TtlvParser $ \t ->
+  case runTtlvParser (find tag) t of
+    Right x -> Right $ getTtlvData x
+    Left y  -> Left y

@@ -53,21 +53,21 @@ defaultTemplate = []
 
 -- find a better way implement message structure
 
+request :: [Ttlv] -> Ttlv
+request xs = requestMessage $ [ requestHeader [ protocol 1 0
+                                              , batchCount $ length xs
+                                              ] ] ++ xs
+
 create :: ObjectType -> TemplateAttribute -> Ttlv
-create o t = requestMessage [ requestHeader [ protocol 1 0
-                                            , batchCount 1]
-                            , batchItem [ enum T.Operation Create
-                                        , structure T.RequestPayload payload
-                                          ] ]
+create o t = batchItem [ enum T.Operation Create
+                       , structure T.RequestPayload payload]
   where payload = [ enum T.ObjectType o
                   , templateAttributeToTtlv T.TemplateAttribute t]
 
 createKeyPair :: TemplateAttribute -> TemplateAttribute -> TemplateAttribute -> Ttlv
-createKeyPair com priv pub = requestMessage [ requestHeader [ protocol 1 0
-                                                            , batchCount 1 ]
-                                            , batchItem [ enum T.Operation CreateKeyPair
-                                                        , structure T.RequestPayload payload
-                                                        ] ]
+createKeyPair com priv pub = batchItem [ enum T.Operation CreateKeyPair
+                                       , structure T.RequestPayload payload
+                                       ]
   where payload = [ templateAttributeToTtlv T.CommonTemplateAttribute com
                   , templateAttributeToTtlv T.PrivateKeyTemplateAttribute priv
                   , templateAttributeToTtlv T.PublicKeyTemplateAttribute pub ]
@@ -80,3 +80,5 @@ createKeyPair com priv pub = requestMessage [ requestHeader [ protocol 1 0
 -- 
 -- request :: KmipContext -> Ttlv -> Ttlv
 -- request ctx r = 
+
+
