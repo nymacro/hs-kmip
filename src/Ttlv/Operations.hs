@@ -7,17 +7,37 @@ import Ttlv.Structures
 import Ttlv.Objects
 import Ttlv.Attributes
 
+requestOperationFor :: Int -> Maybe (TtlvParser Ttlv)
 requestOperationFor t = case t of
-  1 -> createRequest
-  2 -> createKeyPairRequest
-  3 -> registerRequest
-  4 -> reKeyRequest
-  5 -> deriveKeyRequest
-  6 -> certifyRequest
-  7 -> reCertifyRequest
-  8 -> locateRequest
-  9 -> checkRequest
-  _ -> ok -- TODO rest of operations
+  1  -> Just createRequest
+  2  -> Just createKeyPairRequest
+  3  -> Just registerRequest
+  4  -> Just reKeyRequest
+  5  -> Just deriveKeyRequest
+  6  -> Just certifyRequest
+  7  -> Just reCertifyRequest
+  8  -> Just locateRequest
+  9  -> Just checkRequest
+  10 -> Just getRequest
+  11 -> Just getAttributeRequest
+  12 -> Just getAttributeListRequest
+  13 -> Just addAttributeRequest
+  14 -> Just modifyAttributeRequest
+  15 -> Just deleteAttributeRequest
+  16 -> Just obtainLeaseRequest
+  17 -> Just getUsageAllocationRequest
+  18 -> Just activateRequest
+  19 -> Just revokeRequest
+  20 -> Just destroyRequest
+  21 -> Just archiveRequest
+  22 -> Just recoverRequest
+  23 -> Just validateRequest
+  24 -> Just queryRequest
+  25 -> Just cancelRequest
+  26 -> Just pollRequest
+--  27 -> notifyRequest
+--  28 -> putRequest
+  _ -> Nothing
 
 requestOperation = createRequest <|>
                    createKeyPairRequest <|>
@@ -27,19 +47,54 @@ requestOperation = createRequest <|>
                    certifyRequest <|>
                    reCertifyRequest <|>
                    locateRequest <|>
-                   checkRequest
+                   checkRequest <|>
+                   getRequest <|>
+                   getAttributeRequest <|>
+                   getAttributeListRequest <|>
+                   addAttributeRequest <|>
+                   modifyAttributeRequest <|>
+                   deleteAttributeRequest <|>
+                   obtainLeaseRequest <|>
+                   getUsageAllocationRequest <|>
+                   activateRequest <|>
+                   revokeRequest <|>
+                   destroyRequest <|>
+                   archiveRequest <|>
+                   recoverRequest <|>
+                   validateRequest <|>
+                   queryRequest <|>
+                   cancelRequest <|>
+                   pollRequest
 
+responseOperationFor :: Int -> Maybe (TtlvParser Ttlv)
 responseOperationFor t = case t of
-  1 -> createResponse
-  2 -> createKeyPairResponse
-  3 -> registerResponse
-  4 -> reKeyResponse
-  5 -> deriveKeyResponse
-  6 -> certifyResponse
-  7 -> reCertifyResponse
-  8 -> locateResponse
-  9 -> checkResponse
-  _ -> ok -- TODO rest of operations
+  1  -> Just createResponse
+  2  -> Just createKeyPairResponse
+  3  -> Just registerResponse
+  4  -> Just reKeyResponse
+  5  -> Just deriveKeyResponse
+  6  -> Just certifyResponse
+  7  -> Just reCertifyResponse
+  8  -> Just locateResponse
+  9  -> Just checkResponse
+  10 -> Just getResponse
+  11 -> Just getAttributeResponse
+  12 -> Just getAttributeListResponse
+  13 -> Just addAttributeResponse
+  14 -> Just modifyAttributeResponse
+  15 -> Just deleteAttributeResponse
+  16 -> Just obtainLeaseResponse
+  17 -> Just getUsageAllocationResponse
+  18 -> Just activateResponse
+  19 -> Just revokeResponse
+  20 -> Just destroyResponse
+  21 -> Just archiveResponse
+  22 -> Just recoverResponse
+  23 -> Just validateResponse
+  24 -> Just queryResponse
+  25 -> Just cancelResponse
+  26 -> Just pollResponse
+  _ -> Nothing
 
 responseOperation = createResponse <|>
                     createKeyPairResponse <|>
@@ -49,7 +104,24 @@ responseOperation = createResponse <|>
                     certifyResponse <|>
                     reCertifyResponse <|>
                     locateResponse <|>
-                    checkResponse
+                    checkResponse <|>
+                    getResponse <|>
+                    getAttributeResponse <|>
+                    getAttributeListResponse <|>
+                    addAttributeResponse <|>
+                    modifyAttributeResponse <|>
+                    deleteAttributeResponse <|>
+                    obtainLeaseResponse <|>
+                    getUsageAllocationResponse <|>
+                    activateResponse <|>
+                    revokeResponse <|>
+                    destroyResponse <|>
+                    archiveResponse <|>
+                    recoverResponse <|>
+                    validateResponse <|>
+                    queryResponse <|>
+                    cancelResponse <|>
+                    pollResponse
 
 createRequest = apply T.ObjectType tenum <+>
                 apply T.TemplateAttribute templateAttribute
@@ -121,4 +193,118 @@ getResponse = apply T.ObjectType tenum <+>
               apply T.UniqueIdentifier uniqueIdentifier <+>
               cryptoObject
 
+
 -- TODO getAttributes
+
+getAttributeRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+  many     T.AttributeName tstring
+
+getAttributeResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  many     T.Attribute attribute_
+
+getAttributeListRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+
+getAttributeListResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  many     T.Attribute attribute_
+
+addAttributeRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+  apply    T.Attribute attribute_
+
+addAttributeResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  apply    T.Attribute attribute_
+
+modifyAttributeRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+  apply    T.Attribute attribute_
+
+modifyAttributeResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  apply    T.Attribute attribute_
+
+deleteAttributeRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+  apply    T.AttributeName tstring
+  optional T.AttributeIndex tint
+
+deleteAttributeResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  apply    T.Attribute attribute_
+
+obtainLeaseRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+
+obtainLeaseResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  apply    T.LeaseTime tinterval
+  apply    T.LastChangeDate tdatetime
+
+getUsageAllocationRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+  apply    T.UsageLimitsCount tint
+
+getUsageAllocationResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+
+activateRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+
+activateResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+
+revokeRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+  apply    T.RevocationReason revocationReason
+  optional T.CompromiseOccurrenceDate tdatetime
+
+revokeResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+
+destroyRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+
+destroyResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+
+archiveRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+
+archiveResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+
+recoverRequest = do
+  optional T.UniqueIdentifier uniqueIdentifier
+
+recoverResponse = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+
+validateRequest = do
+  many     T.Certificate certificate
+  many     T.UniqueIdentifier uniqueIdentifier
+  optional T.ValidityDate tdatetime
+
+validateResponse = do
+  apply    T.ValidityIndicator tenum
+
+queryRequest = do
+  ok -- TODO
+
+queryResponse = do
+  ok -- TODO
+
+cancelRequest = do
+  ok -- TODO
+
+cancelResponse = do
+  ok -- TODO
+
+pollRequest = do
+  ok -- TODO
+
+pollResponse = do
+  ok -- TODO

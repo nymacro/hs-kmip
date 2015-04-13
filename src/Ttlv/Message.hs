@@ -98,7 +98,9 @@ requestBatchItem = do
   optional T.UniqueBatchItemID uniqueBatchItemId 
   trace (show op) ok
   case op of
-    TtlvEnum op' -> apply T.RequestPayload (requestOperationFor op')
+    TtlvEnum op' -> case requestOperationFor op' of
+      Just x  -> apply T.RequestPayload x
+      Nothing -> nok $ "unhandled operation type (" ++ show op ++ ")"
     _ -> nok $ "unexpected operation type (got " ++ show op ++ ")"
 
 responseHeader = do
@@ -119,6 +121,8 @@ responseBatchItem = do
   optional T.AsynchronousCorrelationValue asynchronousCorrelationValue 
   -- TODO don't always have payload optional for everything
   case op of
-    TtlvEnum op' -> optional T.ResponsePayload (responseOperationFor op')
+    TtlvEnum op' -> case responseOperationFor op' of
+      Just x  -> optional T.ResponsePayload x
+      Nothing -> nok $ "unhandled operation type (" ++ show op ++ ")"
     _ -> nok $ "unexpected operation type (got " ++ show op ++ ")"
   optional T.MessageExtension messageExtension
