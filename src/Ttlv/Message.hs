@@ -6,8 +6,6 @@ import Ttlv.Structures
 import Ttlv.Objects
 import Ttlv.Operations
 
-import Debug.Trace (trace)
-
 -- Contents
 protocolVersion = do
   tag T.ProtocolVersion 
@@ -96,7 +94,6 @@ requestBatchItem = do
   -- apply T.Operation operation 
   op <- get T.Operation
   optional T.UniqueBatchItemID uniqueBatchItemId 
-  trace (show op) ok
   case op of
     TtlvEnum op' -> case requestOperationFor op' of
       Just x  -> apply T.RequestPayload x
