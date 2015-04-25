@@ -10,6 +10,12 @@ import Data.Either
 
 import Control.Applicative
 
+-- TODO fail on input which has not been validated.
+--      `TtlvParser'`s b could be (* Ttlv, Ttlv), one being the full structure,
+--       the other containing unvalidated input.
+--
+--      use Data.List.partition instead of filter for extracting matches
+
 newtype TtlvParser' a b = TtlvParser { runTtlvParser :: a -> Either [String] b }
                         deriving (Functor)
 type TtlvParser a = TtlvParser' a a
@@ -49,6 +55,7 @@ either x y = TtlvParser $ \t -> case runTtlvParser x t of
     y'@(Right _) -> y'
     Left e' -> Left ["neither matched: " ++ concat e ++ " | " ++ concat e']
 
+infixl 8 <|>
 (<|>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
 (<|>) = Ttlv.Structures.either
 

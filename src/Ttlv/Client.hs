@@ -13,20 +13,18 @@ import qualified Data.ByteString.Lazy as L
 data Attribute         = Attribute String TtlvData
 type TemplateAttribute = [Attribute]
 
-
-
 attributeToTtlv :: Attribute -> Ttlv
 attributeToTtlv (Attribute n v) = structure T.Attribute [ tag T.AttributeName n
                                                         , Ttlv (T.Tag T.AttributeValue) v ]
 
-attribute :: (TtlvBoxable a) => String -> a -> Ttlv
+attribute :: (Boxable a) => String -> a -> Ttlv
 attribute n v = structure T.Attribute [ tag T.AttributeName n
                                       , tag T.AttributeValue v ]
 
 templateAttributeToTtlv :: T.TtlvTag -> TemplateAttribute -> Ttlv
 templateAttributeToTtlv tag xs = Ttlv (T.Tag tag) (TtlvStructure (fmap attributeToTtlv xs))
 
-tag :: (TtlvBoxable a) => T.TtlvTag -> a -> Ttlv
+tag :: (Boxable a) => T.TtlvTag -> a -> Ttlv
 tag t x = Ttlv (T.Tag t) (box x)
 
 int :: T.TtlvTag -> Int -> Ttlv

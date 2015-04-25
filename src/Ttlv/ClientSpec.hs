@@ -19,6 +19,6 @@ spec = do
       it "key pair default request" $ do
         req [ createKeyPair [] [] [] ]
     describe "batch message" $ do
-      it "should run batch" $ do
+      it "should generate batch" $ do
         req [ create Certificate []
             , createKeyPair [] [] [] ]

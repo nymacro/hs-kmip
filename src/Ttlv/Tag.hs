@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 module Ttlv.Tag where
 
 data TtlvVersion = TtlvVersion Int Int deriving (Show, Eq)
@@ -219,21 +220,16 @@ data TtlvTag = ActivationDate
              | AttestationCapableIndicator
              deriving (Show, Eq, Enum)
 
--- data Tag' a = Tag TtlvTag
---             | Extension a
---             | Unknown a
---             deriving (Show, Eq)
--- type Tag = Tag' Int
+data Tag' a = Tag TtlvTag
+            | Extension a
+            | Unknown a
+            deriving (Show, Eq, Functor)
+type Tag = Tag' Int
 
--- instance Functor Tag' where
---   fmap fn (Extension x) = Extension $ fn x
---   fmap fn (Unknown x) = Unknown $ fn x
---   fmap fn (Tag x) = Tag x
-
-data Tag = Tag TtlvTag
-         | Extension Int
-         | Unknown Int
-         deriving (Show, Eq)
+-- data Tag = Tag TtlvTag
+--          | Extension Int
+--          | Unknown Int
+--          deriving (Show, Eq)
 
 fromTtlvTag :: TtlvTag -> Int
 fromTtlvTag x = 0x420001 + fromEnum x

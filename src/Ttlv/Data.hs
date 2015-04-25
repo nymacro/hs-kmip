@@ -1,6 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, DataKinds, DeriveFunctor #-}
 module Ttlv.Data where
 
 import Ttlv.Tag
@@ -8,6 +6,7 @@ import Ttlv.Tag
 import Control.Lens
 import Data.Time
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Map as M
 
 -- | Tag data
 data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
@@ -27,37 +26,37 @@ data Ttlv = Ttlv { getTtlvTag :: Tag, getTtlvData :: TtlvData }
           deriving (Show, Eq)
 
 makeLenses ''Ttlv
-makeLenses ''Tag
+makeLenses ''Tag'
 
 makePrisms ''TtlvData
 makePrisms ''TtlvTag
 
-class TtlvBoxable a where
+class Boxable a where
   box :: a -> TtlvData
 
-class TtlvUnboxable a where
+class Unboxable a where
   unbox :: TtlvData -> Maybe a
 
-instance TtlvBoxable Int where
+instance Boxable Int where
   box = TtlvInt
-instance TtlvUnboxable Int where
+instance Unboxable Int where
   unbox (TtlvInt a) = Just a
   unbox _ = Nothing
 
-instance TtlvBoxable String where
+instance Boxable String where
   box = TtlvString
-instance TtlvUnboxable String where
+instance Unboxable String where
   unbox (TtlvString a) = Just a
   unbox _ = Nothing
 
-instance TtlvBoxable Integer where
+instance Boxable Integer where
   box = TtlvLongInt
-instance TtlvUnboxable Integer where
+instance Unboxable Integer where
   unbox (TtlvLongInt a) = Just a
   unbox _ = Nothing
 
-instance TtlvBoxable Bool where
+instance Boxable Bool where
   box = TtlvBool
-instance TtlvUnboxable Bool where
+instance Unboxable Bool where
   unbox (TtlvBool a) = Just a
   unbox _ = Nothing
