@@ -13,8 +13,6 @@ import Control.Applicative
 -- TODO fail on input which has not been validated.
 --      `TtlvParser'`s b could be (* Ttlv, Ttlv), one being the full structure,
 --       the other containing unvalidated input.
---
---      use Data.List.partition instead of filter for extracting matches
 
 newtype TtlvParser' a b = TtlvParser { runTtlvParser :: a -> Either [String] b }
                         deriving (Functor)
@@ -29,7 +27,8 @@ type TtlvParser a = TtlvParser' a a
 instance Applicative (TtlvParser' a) where
   pure x = TtlvParser (\_ -> Right x)
   -- f (a -> b) -> f a -> f b
-  x <*> y = undefined -- TODO
+  -- (TtlvParser x) <*> (TtlvParser y) = TtlvParser $ \t -> (runTtlvParser (x t)) . (runTtlvParser y)
+  x <*> y = undefined
 
 instance Monad (TtlvParser' a) where
   return x = TtlvParser (\_ -> Right x)
@@ -66,26 +65,6 @@ check :: String -> (Ttlv -> Bool) -> TtlvParser Ttlv
 check msg f = TtlvParser $ \t -> if f t
                                  then Right t
                                  else Left ["failed check: " ++ msg]
-
--- | take struct `t` and run parser `p` on it if exists, removing
--- | the struct if it parses without error; otherwise return error
-struct :: TtlvParser Ttlv -> Ttlv -> TtlvParser Ttlv
-struct p t = TtlvParser $ \t ->
-  case getTtlvData t ^? _TtlvStructure of
-    (Just s) -> if 1 == length s
-                then runTtlvParser p (head s)
-                else Left ["couldn't find structure"]
-    Nothing -> Left ["not a structure " ++ show t]
-
-
--- | check if struct contains a specific tag
--- struct1 :: (Ttlv -> Bool) -> TtlvParser Ttlv
--- struct1 fn = TtlvParser $ \t ->
---   case (getTtlvData t) ^? _TtlvStructure of
---     (Just s) -> if 1 == (length $ filter fn s)
---                 then Right t
---                 else Left ["not enough/too many"]
---     Nothing -> Left ["not a structure"]
 
 -- | on: Structure
 -- | return: The Ttlv for `tag`
@@ -220,13 +199,6 @@ apply tag parser = TtlvParser $ \t ->
       Right _ -> Right t
       Left y' -> Left y'
     Left y  -> Left y
-
--- applicative like
-applyIf :: TtlvParser Ttlv -> TtlvParser Ttlv
-applyIf f = TtlvParser $ \t ->
-  case runTtlvParser f t of
-    Right _ -> Right t
-    Left y' -> Left y'
 
 -- | on: Structure
 -- | like apply, but will run `parser` only if tag exists. Will pass
