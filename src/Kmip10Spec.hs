@@ -12,9 +12,9 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Base16 as B16
 
 
-import Ttlv.Message
-import Ttlv.Objects
-import Ttlv.Structures
+import Ttlv.Validator.Message
+import Ttlv.Validator.Objects
+import Ttlv.Validator.Structures
 
 fromHex x = L.fromChunks [fst $ B16.decode x]
 

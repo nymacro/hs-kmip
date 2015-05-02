@@ -1,9 +1,9 @@
 -- KMIP Objects
-module Ttlv.Objects  where
+module Ttlv.Validator.Objects  where
 
 import qualified Ttlv.Tag as T
 import Ttlv.Data
-import Ttlv.Structures
+import Ttlv.Validator.Structures
 
 attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
 attribute name vf = do

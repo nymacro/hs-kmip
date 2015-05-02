@@ -1,11 +1,11 @@
-module Ttlv.ObjectsSpec where
+module Ttlv.Validator.ObjectsSpec where
 
 import Test.Hspec
 
 import Ttlv.Data
 import qualified Ttlv.Tag as T
-import Ttlv.Objects
-import Ttlv.Structures
+import Ttlv.Validator.Objects
+import Ttlv.Validator.Structures
 import qualified Ttlv.Enum as TEnum
 
 import Debug.Trace (trace)

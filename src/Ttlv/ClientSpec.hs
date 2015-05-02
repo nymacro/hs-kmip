@@ -2,9 +2,9 @@ module Ttlv.ClientSpec where
 
 import Ttlv.Client
 import Ttlv.Enum
-import Ttlv.Structures (runTtlvParser)
-import qualified Ttlv.Objects
-import qualified Ttlv.Message as M
+import Ttlv.Validator.Structures (runTtlvParser)
+import qualified Ttlv.Validator.Objects
+import qualified Ttlv.Validator.Message as M
 
 import Test.Hspec
 

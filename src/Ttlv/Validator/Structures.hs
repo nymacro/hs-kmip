@@ -1,6 +1,6 @@
 -- KMIP Structure Validation
 {-# LANGUAGE TypeOperators, DeriveFunctor, FlexibleInstances #-}
-module Ttlv.Structures where
+module Ttlv.Validator.Structures where
 
 import Ttlv.Tag
 import Ttlv.Data
@@ -56,7 +56,7 @@ either x y = TtlvParser $ \t -> case runTtlvParser x t of
 
 infixl 8 <|>
 (<|>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
-(<|>) = Ttlv.Structures.either
+(<|>) = Ttlv.Validator.Structures.either
 
 
 -- | on: Ttlv

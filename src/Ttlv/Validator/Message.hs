@@ -1,10 +1,10 @@
-module Ttlv.Message where
+module Ttlv.Validator.Message where
 
 import qualified Ttlv.Tag as T
 import Ttlv.Data
-import Ttlv.Structures
-import Ttlv.Objects
-import Ttlv.Operations
+import Ttlv.Validator.Structures
+import Ttlv.Validator.Objects
+import Ttlv.Validator.Operations
 
 -- Contents
 protocolVersion = do

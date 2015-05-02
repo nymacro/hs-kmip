@@ -1,11 +1,11 @@
 -- KMIP Client-to-Server operations
-module Ttlv.Operations where
+module Ttlv.Validator.Operations where
 
 import qualified Ttlv.Tag as T
 import Ttlv.Data
-import Ttlv.Structures
-import Ttlv.Objects
-import Ttlv.Attributes
+import Ttlv.Validator.Structures
+import Ttlv.Validator.Objects
+import Ttlv.Validator.Attributes
 
 requestOperationFor :: Int -> Maybe (TtlvParser Ttlv)
 requestOperationFor t = case t of
