@@ -6,6 +6,7 @@ import Web.Scotty
 import Data.Monoid (mconcat)
 import Data.Text.Lazy (pack)
 
+import Data.ByteString.Lazy (fromStrict, toStrict)
 import Data.ByteString.Base64
 
 import Ttlv.Validator.Structures (runTtlvParser)
@@ -18,7 +19,8 @@ main = scotty 3000 $ do
     html $ mconcat ["Hello world"]
   post "/validate" $ do
     ttlv <- param "ttlv"
-    let validate t = case (runTtlvParser requestMessage (decodeTtlv t)) of
-                      Right t -> pack "OK!"
-                      Left  e -> pack $ mconcat e
-    html $ validate ttlv
+    case decode ttlv of
+     Right x -> case runTtlvParser requestMessage (decodeTtlv $ fromStrict x) of
+                 Right _ -> html $ pack "OK!"
+                 Left  e -> html $ pack $ mconcat e
+     Left _ -> html "bad"
