@@ -6,11 +6,24 @@ import Ttlv.Validator.Structures
 import Ttlv.Validator.Objects
 import Ttlv.Validator.Operations
 
+import Control.Monad (when)
+
 -- Contents
 protocolVersion = do
   tag T.ProtocolVersion 
   apply T.ProtocolVersionMajor tint 
   apply T.ProtocolVersionMinor tint
+
+  major <- get T.ProtocolVersionMajor
+  minor <- get T.ProtocolVersionMinor
+  case major of
+    TtlvInt i -> if i > 1
+                then nok "protocol major version invalid"
+                else ok
+  case minor of
+    TtlvInt i -> if i > 0
+                then nok "protocol minor version invalid"
+                else ok
 
 operation = do
   tag T.Operation

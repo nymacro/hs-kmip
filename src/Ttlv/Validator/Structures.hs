@@ -15,20 +15,23 @@ import Control.Applicative
 --       the other containing unvalidated input.
 
 newtype TtlvParser' a b = TtlvParser { runTtlvParser :: a -> Either [String] b }
-                        deriving (Functor)
+                        -- deriving (Functor)
 type TtlvParser a = TtlvParser' a a
 
 -- derived instance looks like:
--- instance Functor (TtlvParser' a) where
---   fmap fn (TtlvParser x) = TtlvParser ((\b2 b3 -> fmap fn (b2 ((\b1 -> b1) b3))) x)
---   -- simplified:
---   fmap fn (TtlvParser x) = TtlvParser ((\a b -> fmap fn (a $ b)) x)
+instance Functor (TtlvParser' a) where
+  -- fmap fn (TtlvParser x) = TtlvParser ((\b2 b3 -> fmap fn (b2 ((\b1 -> b1) b3))) x)
+  -- simplified:
+  fmap fn (TtlvParser x) = TtlvParser ((\a b -> fmap fn (a $ b)) x)
 
+-- Applicative like IO
 instance Applicative (TtlvParser' a) where
-  pure x = TtlvParser (\_ -> Right x)
+  pure = return
   -- f (a -> b) -> f a -> f b
-  -- (TtlvParser x) <*> (TtlvParser y) = TtlvParser $ \t -> (runTtlvParser (x t)) . (runTtlvParser y)
-  x <*> y = undefined
+  a <*> b = do
+    f <- a
+    x <- b
+    return (f x)
 
 instance Monad (TtlvParser' a) where
   return x = TtlvParser (\_ -> Right x)
