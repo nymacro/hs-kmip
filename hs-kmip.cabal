@@ -58,7 +58,7 @@ library
 --                      , hspec >= 1.11.4
 --                      , hs-kmip
 
-executable kmip_server
+executable server
   main-is:  server/Main.hs
   build-depends:       base >= 4.7 && <4.8
                      , hs-kmip
