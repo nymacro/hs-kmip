@@ -16,7 +16,18 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Ttlv, Kmip, Ttlv.Validator
+  exposed-modules:     Ttlv
+                     , Ttlv.Parser
+                     , Ttlv.Enum
+                     , Ttlv.Data
+                     , Ttlv.Tag
+                     , Ttlv.Validator
+                     , Ttlv.Validator.Structures
+                     , Ttlv.Validator.Message
+                     , Ttlv.Validator.Objects
+                     , Ttlv.Validator.Operations
+                     , Ttlv.Validator.Attributes
+                     , Kmip
   -- other-modules:       
   other-extensions:    OverloadedStrings
   build-depends:       HTTP >= 0
@@ -39,8 +50,19 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
 
--- test-suite test-hs-kmip
+-- test-suite test
 --   ghc-options: -Wall
 --   type: exitcode-stdio-1.0
---   main-is: src/Spec.hs
---   build-depends: hspec >= 1.11.4
+--   main-is: tests/Main.hs
+--   build-depends:       base >= 4.7 && <4.8
+--                      , hspec >= 1.11.4
+--                      , hs-kmip
+
+executable kmip_server
+  main-is:  server/Main.hs
+  build-depends:       base >= 4.7 && <4.8
+                     , hs-kmip
+                     , scotty >= 0.0
+                     , text >= 0.0
+                     , bytestring
+                     , base64-bytestring

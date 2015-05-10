@@ -123,6 +123,9 @@ responseOperation = createResponse <|>
                     cancelResponse <|>
                     pollResponse
 
+serverRequestOperation = serverNotifyRequest <|>
+                         serverPutRequest
+
 createRequest = apply T.ObjectType tenum <+>
                 apply T.TemplateAttribute templateAttribute
 
@@ -292,19 +295,38 @@ validateResponse = do
   apply    T.ValidityIndicator tenum
 
 queryRequest = do
-  ok -- TODO
+  apply    T.QueryFunction tenum
 
 queryResponse = do
-  ok -- TODO
+  many     T.Operation tenum
+  many     T.ObjectType tenum
+  optional T.VendorIdentification tstring
+  optional T.ServerInformation tstring
+  many     T.ApplicationNamespace applicationSpecificInfo
 
 cancelRequest = do
-  ok -- TODO
+  apply    T.AsynchronousCorrelationValue ok -- FIXME type
 
 cancelResponse = do
-  ok -- TODO
+  apply    T.AsynchronousCorrelationValue ok -- FIXME type
+  apply    T.CancellationResult ok -- FIXME type
 
 pollRequest = do
-  ok -- TODO
+  apply    T.AsynchronousCorrelationValue ok -- FIXME type
 
 pollResponse = do
-  ok -- TODO
+  ok
+
+-- Server -> Client Operations
+serverNotifyRequest = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  many1    T.Attribute attribute_
+
+serverPutRequest = do
+  apply    T.UniqueIdentifier uniqueIdentifier
+  apply    T.PutFunction tenum
+  optional T.ReplacedUniqueIdentifier uniqueIdentifier
+  cryptoObject
+  many     T.Attribute attribute_
+  
+  

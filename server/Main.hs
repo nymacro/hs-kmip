@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Kmip.Server where
+module Main where
 
 import Web.Scotty
 
@@ -23,6 +23,22 @@ main = scotty 3000 $ do
     ttlv <- body -- param "ttlv"
     case decode $ toStrict ttlv of
      Right x -> case runTtlvParser (requestMessage <|> responseMessage) (decodeTtlv $ fromStrict x) of
+                 Right _ -> html "ok"
+                 Left  e -> html $ pack $ mconcat (map (++ "\n") e)
+     Left _ -> html "bad input"
+
+  post "/validate/request" $ do
+    ttlv <- body -- param "ttlv"
+    case decode $ toStrict ttlv of
+     Right x -> case runTtlvParser requestMessage (decodeTtlv $ fromStrict x) of
+                 Right _ -> html "ok"
+                 Left  e -> html $ pack $ mconcat (map (++ "\n") e)
+     Left _ -> html "bad input"
+
+  post "/validate/response" $ do
+    ttlv <- body -- param "ttlv"
+    case decode $ toStrict ttlv of
+     Right x -> case runTtlvParser responseMessage (decodeTtlv $ fromStrict x) of
                  Right _ -> html "ok"
                  Left  e -> html $ pack $ mconcat (map (++ "\n") e)
      Left _ -> html "bad input"
