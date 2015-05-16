@@ -230,3 +230,9 @@ get tag = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
     Right x -> Right $ getTtlvData x
     Left y  -> Left y
+
+under :: TtlvTag -> TtlvParser Ttlv
+under tag = TtlvParser $ \t ->
+  case runTtlvParser (find tag) t of
+    Right x -> Right x
+    Left y  -> Left y

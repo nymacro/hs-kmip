@@ -1,4 +1,4 @@
-module Ttlv.Client where
+module Kmip.Client where
 
 import qualified Ttlv.Tag as T
 import Ttlv.Data

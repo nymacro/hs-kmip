@@ -1,6 +1,6 @@
 module Ttlv.ClientSpec where
 
-import Ttlv.Client
+import Kmip.Client
 import Ttlv.Enum
 import Ttlv.Validator.Structures (runTtlvParser)
 import qualified Ttlv.Validator.Objects

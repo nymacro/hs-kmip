@@ -27,7 +27,6 @@ library
                      , Ttlv.Validator.Objects
                      , Ttlv.Validator.Operations
                      , Ttlv.Validator.Attributes
-                     , Kmip
   -- other-modules:       
   other-extensions:    OverloadedStrings
   build-depends:       HTTP >= 0
@@ -49,20 +48,34 @@ library
                      , tls >= 0.0
   hs-source-dirs:      src
   default-language:    Haskell2010
+  ghc-options: -Wall
 
--- test-suite test
---   ghc-options: -Wall
---   type: exitcode-stdio-1.0
---   main-is: tests/Main.hs
---   build-depends:       base >= 4.7 && <4.8
---                      , hspec >= 1.11.4
---                      , hs-kmip
+test-suite test
+  type: exitcode-stdio-1.0
+  hs-source-dirs:      client
+                     , tests
+  main-is: Main.hs
+  ghc-options: -Wall
+  default-extensions: DoAndIfThenElse
+  default-language:    Haskell2010
+  build-depends:       base
+                     , hspec
+                     , hs-kmip
+                     , HTTP
+                     , network-uri
+                     , bytestring
+                     , time
+                     , base16-bytestring
+                     , base64-bytestring
+                     , old-locale
+                     , lens
 
 executable server
   main-is:  server/Main.hs
-  build-depends:       base >= 4.7 && <4.8
+  build-depends:       base
                      , hs-kmip
-                     , scotty >= 0.0
-                     , text >= 0.0
+                     , scotty
+                     , text
                      , bytestring
                      , base64-bytestring
+                     , lens
