@@ -72,6 +72,7 @@ test-suite test
 
 executable server
   main-is:  server/Main.hs
+  default-language:    Haskell2010
   build-depends:       base
                      , hs-kmip
                      , scotty
