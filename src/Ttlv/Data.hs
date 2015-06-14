@@ -6,7 +6,6 @@ import Ttlv.Tag
 import Control.Lens
 import Data.Time
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Map as M
 
 -- | Tag data
 data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }

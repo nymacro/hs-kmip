@@ -1,11 +1,10 @@
 -- KMIP Structure Validation
-{-# LANGUAGE TypeOperators, DeriveFunctor, FlexibleInstances #-}
+{-# LANGUAGE TypeOperators, FlexibleInstances #-}
 module Ttlv.Validator.Structures where
 
 import Ttlv.Tag
 import Ttlv.Data
 import Control.Lens
-import qualified Data.List as L
 import Data.Either
 
 import Control.Applicative
@@ -15,14 +14,13 @@ import Control.Applicative
 --       the other containing unvalidated input.
 
 newtype TtlvParser' a b = TtlvParser { runTtlvParser :: a -> Either [String] b }
-                        -- deriving (Functor)
 type TtlvParser a = TtlvParser' a a
 
 -- derived instance looks like:
 instance Functor (TtlvParser' a) where
   -- fmap fn (TtlvParser x) = TtlvParser ((\b2 b3 -> fmap fn (b2 ((\b1 -> b1) b3))) x)
   -- simplified:
-  fmap fn (TtlvParser x) = TtlvParser ((\a b -> fmap fn (a $ b)) x)
+  fmap fn (TtlvParser x) = TtlvParser ((\a b -> fn <$> a b) x)
 
 -- Applicative like IO
 instance Applicative (TtlvParser' a) where
@@ -57,21 +55,21 @@ either x y = TtlvParser $ \t -> case runTtlvParser x t of
     y'@(Right _) -> y'
     Left e' -> Left ["neither matched: " ++ concat e ++ " | " ++ concat e']
 
-infixl 8 <|>
+-- | operator for either
 (<|>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
 (<|>) = Ttlv.Validator.Structures.either
-
+infixl 8 <|>
 
 -- | on: Ttlv
--- | look at Ttlv and see if it matches; do not remove matched data
+--   look at Ttlv and see if it matches; do not remove matched data
 check :: String -> (Ttlv -> Bool) -> TtlvParser Ttlv
 check msg f = TtlvParser $ \t -> if f t
                                  then Right t
                                  else Left ["failed check: " ++ msg]
 
 -- | on: Structure
--- | return: The Ttlv for `tag`
--- | find a tag from structure
+--   return: The Ttlv for `tag`
+--   find a tag from structure
 find :: TtlvTag -> TtlvParser Ttlv
 find tag = TtlvParser $ \t ->
   case getTtlvData t ^? _TtlvStructure of
@@ -89,7 +87,7 @@ fromRight (Left _) = undefined
 fromRight (Right x) = x
 
 -- | on: Ttlv
--- | zero-many
+--   zero-many
 many :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many tag v = TtlvParser $ \t ->
   case getTtlvData t ^? _TtlvStructure of
@@ -103,7 +101,7 @@ many tag v = TtlvParser $ \t ->
                else Left $ ("not everything matched for tag " ++ show tag) : concatMap fromLeft errors
 
 -- | on: Ttlv
--- | one-many
+--   one-many
 many1 :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 many1 tag v = TtlvParser $ \t ->
   case getTtlvData t ^? _TtlvStructure of
@@ -117,21 +115,21 @@ many1 tag v = TtlvParser $ \t ->
                else Left $ ("not everything matched for tag " ++ show tag) : concatMap fromLeft errors
 
 -- | on: Ttlv
--- | check current Ttlv tag
+--   check current Ttlv tag
 tag :: TtlvTag -> TtlvParser Ttlv
 tag tag' = TtlvParser $ \t -> if getTtlvTag t == Tag tag'
                               then Right t
                               else Left ["current tag not " ++ show tag' ++ " but " ++ show (getTtlvTag t)]
 
 -- | on: Ttlv
--- | check Ttlv data type
+--   check Ttlv data type
 string :: TtlvParser Ttlv
 string = TtlvParser $ \t -> case getTtlvData t of
   TtlvString _ -> Right t
   otherwise -> Left ["not a string"]
 
 -- | on: Ttlv
--- | check Ttlv data type and value
+--   check Ttlv data type and value
 stringEq :: String -> TtlvParser Ttlv
 stringEq s = TtlvParser $ \t -> case getTtlvData t of
   TtlvString x -> if x == s
@@ -140,61 +138,61 @@ stringEq s = TtlvParser $ \t -> case getTtlvData t of
   otherwise -> Left ["not a string"]
 
 -- | on: Ttlv
--- | check Ttlv data type
+--   check Ttlv data type
 tstruct :: TtlvParser Ttlv
 tstruct = TtlvParser $ \t -> case getTtlvData t of
   TtlvStructure _ -> Right t
   otherwise -> Left ["not a structure"]
 
 -- | on: Ttlv
--- | check Ttlv data type
+--   check Ttlv data type
 tenum :: TtlvParser Ttlv
 tenum = TtlvParser $ \t -> case getTtlvData t of
-  TtlvEnum e -> Right t
+  TtlvEnum _ -> Right t
   otherwise  -> Left ["not an enum"]
 
 tbytestring :: TtlvParser Ttlv
 tbytestring = TtlvParser $ \t -> case getTtlvData t of
-  TtlvByteString e -> Right t
+  TtlvByteString _ -> Right t
   otherwise  -> Left ["not a byte-string"]
 
 tstring :: TtlvParser Ttlv
 tstring = TtlvParser $ \t -> case getTtlvData t of
-  TtlvString e -> Right t
+  TtlvString _ -> Right t
   otherwise  -> Left ["not a string"]
 
 tbigint :: TtlvParser Ttlv
 tbigint = TtlvParser $ \t -> case getTtlvData t of
-  TtlvBigInt e -> Right t
+  TtlvBigInt _ -> Right t
   otherwise  -> Left ["not a big int"]
 
 tint :: TtlvParser Ttlv
 tint = TtlvParser $ \t -> case getTtlvData t of
-  TtlvInt e -> Right t
+  TtlvInt _ -> Right t
   otherwise  -> Left ["not an int"]
 
 tlong :: TtlvParser Ttlv
 tlong = TtlvParser $ \t -> case getTtlvData t of
-  TtlvLongInt e -> Right t
+  TtlvLongInt _ -> Right t
   otherwise  -> Left ["not an int"]
 
 tinterval :: TtlvParser Ttlv
 tinterval = TtlvParser $ \t -> case getTtlvData t of
-  TtlvInterval e -> Right t
+  TtlvInterval _ -> Right t
   otherwise  -> Left ["not an int"]
 
 tdatetime :: TtlvParser Ttlv
 tdatetime = TtlvParser $ \t -> case getTtlvData t of
-  TtlvDateTime e -> Right t
+  TtlvDateTime _ -> Right t
   otherwise  -> Left ["not an int"]
 
 tbool :: TtlvParser Ttlv
 tbool = TtlvParser $ \t -> case getTtlvData t of
-  TtlvBool e -> Right t
+  TtlvBool _ -> Right t
   otherwise  -> Left ["not a bool"]
 
 -- | on: Structure
--- | run `parser` on `tag`, returning original Ttlv
+--   run `parser` on `tag`, returning original Ttlv
 apply :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 apply tag parser = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
@@ -204,8 +202,8 @@ apply tag parser = TtlvParser $ \t ->
     Left y  -> Left y
 
 -- | on: Structure
--- | like apply, but will run `parser` only if tag exists. Will pass
--- | by default.
+--   like apply, but will run `parser` only if tag exists. Will pass
+--   by default.
 optional :: TtlvTag -> TtlvParser Ttlv -> TtlvParser Ttlv
 optional tag parser = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
@@ -215,12 +213,12 @@ optional tag parser = TtlvParser $ \t ->
     Left _  -> Right t
 
 -- | on: *
--- | identity for TtlvParser
+--   identity for TtlvParser
 ok :: TtlvParser Ttlv
 ok = TtlvParser $ \t -> Right t
 
 -- | on: *
--- | return an error
+--   return an error
 nok :: String -> TtlvParser Ttlv
 nok msg = TtlvParser $ \t -> Left [msg]
 

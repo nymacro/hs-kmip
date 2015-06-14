@@ -8,11 +8,8 @@ import Ttlv.Validator.Objects
 import Ttlv.Validator.Structures
 import qualified Ttlv.Enum as TEnum
 
-import Debug.Trace (trace)
-import Control.Monad (when)
-
 ttlv :: T.TtlvTag -> TtlvData -> Ttlv
-ttlv t d = Ttlv (T.Tag t) d
+ttlv t = Ttlv (T.Tag t)
 
 xx = ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
                                      , ttlv T.AttributeIndex (TtlvInt 0)
@@ -54,8 +51,8 @@ spec = do
         let xx' = ttlv T.Attribute (TtlvStructure [xx, yy])
         runTtlvParser (many T.Attribute attribute_) xx' `shouldBe` Right xx'
         runTtlvParser (many T.ArchiveDate attribute_) xx' `shouldBe` Right xx'
-
-      it "should do monadic things" $ do
+    describe "monad" $ do
+      it "should work correctly with monadic validator" $ do
         let p = do
               tstruct
               tag T.Attribute
@@ -70,7 +67,8 @@ spec = do
                 apply T.AttributeName  (stringEq "x-hi")
                 apply T.AttributeValue (stringEq "hello")
         runTtlvParser p' xx' `shouldBe` Right xx'
-      it "should allow stuff to be pulled out" $ do
+
+      it "should allow extraction of data" $ do
         let xx' = ttlv T.TemplateAttribute (TtlvStructure [ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
                                                                                            , ttlv T.AttributeValue (TtlvString "hello") ] ) ] )
             p = do
@@ -81,6 +79,18 @@ spec = do
                 then ok
                 else nok "couldn't extract"
         runTtlvParser p xx' `shouldBe` Right xx'
+
+      it "should fail if validation fails" $ do
+        let p = do
+              tint
+              tag T.Attribute
+              apply T.AttributeName (stringEq "x-hi")
+            p' = do
+                  tstruct
+                  tag T.Attribute
+                  apply T.AttributeName (stringEq "y-nope")
+        runTtlvParser p xx `shouldBe` Left ["failed combinator", "not an int"]
+        runTtlvParser p' xx `shouldBe` Left ["mismatch in expected value"]
            
     describe "Objects" $ do
       describe "Attribute" $ do

@@ -3,16 +3,12 @@ module Ttlv.Parser ( encodeTtlv
                    , decodeTtlv
                    ) where
 
-import Debug.Trace (trace)
-
 import Data.Binary
 import Data.Binary.Get
 import Data.Binary.Put
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Internal as BS (w2c, c2w)
 import qualified Crypto.Number.Serialize as CN (os2ip, i2osp, i2ospOf_, lengthBytes)
-import System.Locale
-import Data.Time
 import Data.Time.Clock.POSIX
 import Data.Maybe
 import Control.Monad
@@ -147,7 +143,7 @@ ttlvDataLength (TtlvDateTime _) = 8
 ttlvDataLength (TtlvInterval _) = 4 -- w/o padding
 
 ttlvLength :: Ttlv -> Int
-ttlvLength (Ttlv t d) = 3 + 1 + 4 + (paddedTtlvDataLength d)
+ttlvLength (Ttlv _ d) = 3 + 1 + 4 + (paddedTtlvDataLength d)
 
 -- put data without padding
 unparseTtlvData :: TtlvData -> Put
@@ -179,12 +175,12 @@ unparseTtlv (Ttlv t d) = do
   putLazyByteString $ encodeTtlvTag $ fromTag t
   putWord8 $ fromIntegral $ ttlvDataType d
   -- this is terrible. Find a better way to do this
-  let length = ttlvDataLength d
+  let len = ttlvDataLength d
       realLength = paddedTtlvDataLength d
-  putWord32be $ fromIntegral length
+  putWord32be $ fromIntegral len
   unparseTtlvData d
   -- add padding at end
-  replicateM_ (realLength - length) (putWord8 0)
+  replicateM_ (realLength - len) (putWord8 0)
 
 
 -- | Decode a Lazy ByteString into the corresponding Ttlv type

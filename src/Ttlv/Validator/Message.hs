@@ -20,10 +20,12 @@ protocolVersion = do
     TtlvInt i -> if i > 1
                 then nok "protocol major version invalid"
                 else ok
+    otherwise -> nok "failure"
   case minor of
     TtlvInt i -> if i > 0
                 then nok "protocol minor version invalid"
                 else ok
+    otherwise -> nok "failure"
 
 operation = do
   tag T.Operation
@@ -134,5 +136,5 @@ responseBatchItem = do
     TtlvEnum op' -> case responseOperationFor op' of
       Just x  -> optional T.ResponsePayload x
       Nothing -> nok $ "unhandled operation type (" ++ show op ++ ")"
-    _ -> nok $ "unexpected operation type (got " ++ show op ++ ")"
+    otherwise -> nok $ "unexpected operation type (got " ++ show op ++ ")"
   optional T.MessageExtension messageExtension
