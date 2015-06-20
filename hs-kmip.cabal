@@ -80,3 +80,5 @@ executable server
                      , bytestring
                      , base64-bytestring
                      , lens
+                     , blaze-html
+                     , blaze-markup
