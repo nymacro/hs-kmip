@@ -82,3 +82,4 @@ executable server
                      , lens
                      , blaze-html
                      , blaze-markup
+                     , stitch
