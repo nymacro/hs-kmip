@@ -31,5 +31,6 @@ spec = with (S.scottyApp Kmip.Server.server) $ do
     -- run through all data
     describe "Validate" $ do
       mapM_ (\x -> it ("should validate " ++ fst x) $
+                   -- postHtmlForm "/validate" [("ttlv", unpack . encode . toStrict $ snd x)] `shouldRespondWith` "ok" { matchStatus = 200 })
                    post "/validate" (fromStrict . encode . toStrict $ snd x) `shouldRespondWith` "ok" { matchStatus = 200 })
         kmip_1_0__all

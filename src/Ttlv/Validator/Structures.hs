@@ -61,7 +61,7 @@ either x y = TtlvParser $ \t -> case runTtlvParser x t of
 infixl 8 <|>
 
 -- | on: Ttlv
---   look at Ttlv and see if it matches; do not remove matched data
+--   look at Ttlv and see if it matches
 check :: String -> (Ttlv -> Bool) -> TtlvParser Ttlv
 check msg f = TtlvParser $ \t -> if f t
                                  then Right t
@@ -234,3 +234,4 @@ under tag = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
     Right x -> Right x
     Left y  -> Left y
+

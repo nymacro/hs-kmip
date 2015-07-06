@@ -101,3 +101,9 @@ spec = do
       describe "Credential" $ do
         it "valid" $ do
           runTtlvParser credential zz `shouldBe` Right zz
+
+    describe "Extraction" $ do
+      it "ok" $ do
+        runTtlvParser ok xx `shouldBe` Right xx
+      it "under" $ do
+        runTtlvParser (under T.AttributeName) xx `shouldBe` Right (ttlv T.AttributeName $ TtlvString "x-hi")
