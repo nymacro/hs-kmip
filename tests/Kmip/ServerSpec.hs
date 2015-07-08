@@ -26,11 +26,11 @@ spec :: Spec
 spec = with (S.scottyApp Kmip.Server.server) $ do
   describe "Server" $ do
     it "should respond to hello" $ do
-      get "/hello" `shouldRespondWith` "Hello world" { matchStatus = 200 }
+      get "/" `shouldRespondWith` 200
 
     -- run through all data
     describe "Validate" $ do
       mapM_ (\x -> it ("should validate " ++ fst x) $
                    -- postHtmlForm "/validate" [("ttlv", unpack . encode . toStrict $ snd x)] `shouldRespondWith` "ok" { matchStatus = 200 })
-                   post "/validate" (fromStrict . encode . toStrict $ snd x) `shouldRespondWith` "ok" { matchStatus = 200 })
+                   post "/validate" (snd x) `shouldRespondWith` "ok" { matchStatus = 200 })
         kmip_1_0__all

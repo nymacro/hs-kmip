@@ -101,43 +101,31 @@ server = do
   get "/" $ do
     html $ renderHtml $ homePage
 
-  get "/hello" $ do
-    html $ "Hello world"
-
   post "/display" $ do
     ttlv <- body
-    case decode $ toStrict ttlv of
-     Right x -> html . renderHtml $ do
-       H.h1 "KMIP Display"
-       let ttlv'       = decodeTtlv $ fromStrict x
-           validHtml   = H.div ! class_ "good" $ H.string "Validates"
-           invalidHtml = H.div ! class_ "bad"  $ H.string "Failed Validation"
-       either (\_ -> invalidHtml) (\_ -> validHtml) $ S.runTtlvParser (requestMessage S.<|> responseMessage) ttlv'
-       defaultThings $ renderTtlv ttlv'
-     Left _  -> html "bad input"
+    html . renderHtml $ do
+      H.h1 "KMIP Display"
+      let ttlv'       = decodeTtlv ttlv
+          validHtml   = H.div ! class_ "good" $ H.string "Validates"
+          invalidHtml = H.div ! class_ "bad"  $ H.string "Failed Validation"
+      either (\_ -> invalidHtml) (\_ -> validHtml) $ S.runTtlvParser (requestMessage S.<|> responseMessage) ttlv'
+      defaultThings $ renderTtlv ttlv'
 
   -- validate request or response
   post "/validate" $ do
     ttlv <- body
-    case decode $ toStrict ttlv of
-     Right x -> case S.runTtlvParser (requestMessage S.<|> responseMessage) (decodeTtlv $ fromStrict x) of
-                 Right _ -> html "ok"
-                 Left  e -> html $ pack $ mconcat (map (++ "\n") e)
-     Left _ -> html "bad input"
+    case S.runTtlvParser (requestMessage S.<|> responseMessage) (decodeTtlv ttlv) of
+     Right _ -> html "ok"
+     Left  e -> html $ pack $ mconcat (map (++ "\n") e)
 
   post "/validate/request" $ do
     ttlv <- body
-    case decode $ toStrict ttlv of
-     Right x -> case S.runTtlvParser requestMessage (decodeTtlv $ fromStrict x) of
-                 Right _ -> html "ok"
-                 Left  e -> html $ pack $ mconcat (map (++ "\n") e)
-     Left _ -> html "bad input"
+    case S.runTtlvParser requestMessage (decodeTtlv ttlv) of
+     Right _ -> html "ok"
+     Left  e -> html $ pack $ mconcat (map (++ "\n") e)
 
   post "/validate/response" $ do
     ttlv <- body
-    case decode $ toStrict ttlv of
-     Right x -> case S.runTtlvParser responseMessage (decodeTtlv $ fromStrict x) of
-                 Right _ -> html "ok"
-                 Left  e -> html $ pack $ mconcat (map (++ "\n") e)
-     Left _ -> html "bad input"
-
+    case S.runTtlvParser responseMessage (decodeTtlv ttlv) of
+     Right _ -> html "ok"
+     Left  e -> html $ pack $ mconcat (map (++ "\n") e)
