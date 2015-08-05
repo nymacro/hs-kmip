@@ -37,16 +37,22 @@ stylesheet = renderCSS $ do
   "body" ? do
     "background-color" .= "#fffff0"
     "color" .= "#303030"
+    "margin" .= "8 auto"
+    "padding" .= "4px"
   ".tag" ? do
     "border" .= "1px solid #303030"
     "background-color" .= "#cccccc"
+    "margin" .= "8 auto"
   ".tagName" ? do
     "display" .= "inline"
     "font-size" .= "16"
     "font-weight" .= "bold"
+    "padding" .= "4px"
   ".data" ? do
     "border" .= "1px dotted #606060"
     "background-color" .= "#dddddd"
+    "margin" .= "8 auto"
+    "padding" .= "4px"
   ".type" ? do
     "display" .= "inline"
     "font-style" .= "italic"
