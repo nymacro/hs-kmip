@@ -1,9 +1,9 @@
 -- KMIP Objects
 module Ttlv.Validator.Objects  where
 
-import qualified Ttlv.Tag as T
-import Ttlv.Data
-import Ttlv.Validator.Structures
+import           Ttlv.Data
+import qualified Ttlv.Tag                  as T
+import           Ttlv.Validator.Structures
 
 attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
 attribute name vf = do
@@ -33,13 +33,13 @@ credentialValue = do
 keyBlock :: TtlvParser Ttlv
 keyBlock = do
   tag      T.KeyBlock
-  apply    T.KeyFormatType tenum 
-  optional T.KeyCompressionType tenum 
-  apply    T.KeyValue keyValue 
+  apply    T.KeyFormatType tenum
+  optional T.KeyCompressionType tenum
+  apply    T.KeyValue keyValue
   optional T.CryptographicAlgorithm tenum  -- FIXME
   optional T.CryptographicLength tint   -- FIXME
   optional T.KeyWrappingData tstruct -- FIXME
-           
+
 keyValue :: TtlvParser Ttlv
 keyValue = do
   apply    T.KeyMaterial keyMaterial
@@ -48,10 +48,10 @@ keyValue = do
 keyWrappingData :: TtlvParser Ttlv
 keyWrappingData = do
   --tag      T.WrappingData <+>
-  apply    T.WrappingMethod tenum 
-  optional T.EncryptionKeyInformation encryptionKeyInfo 
-  optional T.MACSignatureKeyInformation macSignatureKeyInfo 
-  optional T.MACSignature tbytestring 
+  apply    T.WrappingMethod tenum
+  optional T.EncryptionKeyInformation encryptionKeyInfo
+  optional T.MACSignatureKeyInformation macSignatureKeyInfo
+  optional T.MACSignature tbytestring
   optional T.IVCounterNonce tbytestring
 
 encryptionKeyInfo :: TtlvParser Ttlv
@@ -67,9 +67,9 @@ macSignatureKeyInfo = do
 
 keyWrappingSpec :: TtlvParser Ttlv
 keyWrappingSpec = do
-  apply    T.WrappingMethod tenum 
-  optional T.EncryptionKeyInformation tstruct 
-  optional T.MACSignatureKeyInformation tstruct 
+  apply    T.WrappingMethod tenum
+  optional T.EncryptionKeyInformation tstruct
+  optional T.MACSignatureKeyInformation tstruct
   many     T.Attribute attribute_
 
 keyMaterial :: TtlvParser Ttlv
@@ -84,27 +84,27 @@ keyMaterialSymmetricKey = apply T.Key tbytestring
 
 keyMaterialDSAPrivateKey :: TtlvParser Ttlv
 keyMaterialDSAPrivateKey = do
-  apply T.P tbigint 
-  apply T.Q tbigint 
-  apply T.G tbigint 
+  apply T.P tbigint
+  apply T.Q tbigint
+  apply T.G tbigint
   apply T.X tbigint
 
 keyMaterialDSAPublicKey :: TtlvParser Ttlv
 keyMaterialDSAPublicKey = do
-  apply T.P tbigint 
-  apply T.Q tbigint 
-  apply T.G tbigint 
+  apply T.P tbigint
+  apply T.Q tbigint
+  apply T.G tbigint
   apply T.Y tbigint
 
 keyMaterialRSAPrivateKey :: TtlvParser Ttlv
 keyMaterialRSAPrivateKey = do
-  optional T.Modulus tbigint 
-  optional T.PrivateExponent tbigint 
-  optional T.PublicExponent tbigint 
-  optional T.P tbigint 
-  optional T.Q tbigint 
-  optional T.PrimeExponentP tbigint 
-  optional T.PrimeExponentQ tbigint 
+  optional T.Modulus tbigint
+  optional T.PrivateExponent tbigint
+  optional T.PublicExponent tbigint
+  optional T.P tbigint
+  optional T.Q tbigint
+  optional T.PrimeExponentP tbigint
+  optional T.PrimeExponentQ tbigint
   optional T.CRTCoefficient tbigint
 
 keyMaterialRSAPublicKey :: TtlvParser Ttlv
@@ -145,12 +145,12 @@ privateKey = do
 
 splitKey :: TtlvParser Ttlv
 splitKey = do
-  tag   T.SplitKey 
-  apply T.SplitKeyParts tint 
-  apply T.KeyPartIdentifier tint 
-  apply T.SplitKeyThreshold tint 
-  apply T.SplitKeyMethod tenum 
-  apply T.PrimeFieldSize tbigint 
+  tag   T.SplitKey
+  apply T.SplitKeyParts tint
+  apply T.KeyPartIdentifier tint
+  apply T.SplitKeyThreshold tint
+  apply T.SplitKeyMethod tenum
+  apply T.PrimeFieldSize tbigint
   apply T.KeyBlock keyBlock
 
 template :: TtlvParser Ttlv
@@ -161,8 +161,8 @@ template = do
 
 secretData :: TtlvParser Ttlv
 secretData = do
-  tag   T.SecretData 
-  apply T.SecretDataType tenum 
+  tag   T.SecretData
+  apply T.SecretDataType tenum
   apply T.KeyBlock keyBlock
 
 opaqueObject :: TtlvParser Ttlv

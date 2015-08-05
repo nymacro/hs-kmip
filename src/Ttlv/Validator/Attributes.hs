@@ -2,9 +2,9 @@
 
 module Ttlv.Validator.Attributes where
 
-import qualified Ttlv.Tag as T
-import Ttlv.Data
-import Ttlv.Validator.Structures
+import           Ttlv.Data
+import qualified Ttlv.Tag                  as T
+import           Ttlv.Validator.Structures
 
 uniqueIdentifier :: TtlvParser Ttlv
 uniqueIdentifier = tag T.UniqueIdentifier <+>

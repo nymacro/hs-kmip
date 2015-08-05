@@ -1,11 +1,11 @@
 -- KMIP Client-to-Server operations
 module Ttlv.Validator.Operations where
 
-import qualified Ttlv.Tag as T
-import Ttlv.Data
-import Ttlv.Validator.Structures
-import Ttlv.Validator.Objects
-import Ttlv.Validator.Attributes
+import           Ttlv.Data
+import qualified Ttlv.Tag                  as T
+import           Ttlv.Validator.Attributes
+import           Ttlv.Validator.Objects
+import           Ttlv.Validator.Structures
 
 requestOperationFor :: Int -> Maybe (TtlvParser Ttlv)
 requestOperationFor t = case t of
@@ -186,7 +186,7 @@ checkResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
                 optional T.UsageLimitsCount tint <+> -- ???
                 optional T.CryptographicUsageMask tint <+>
                 optional T.LeaseTime tinterval -- ???
-                
+
 getRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
              optional T.KeyFormatType tenum <+>
              optional T.KeyCompressionType tenum <+>
@@ -328,5 +328,5 @@ serverPutRequest = do
   optional T.ReplacedUniqueIdentifier uniqueIdentifier
   cryptoObject
   many     T.Attribute attribute_
-  
-  
+
+

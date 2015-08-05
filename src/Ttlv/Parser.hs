@@ -3,19 +3,20 @@ module Ttlv.Parser ( encodeTtlv
                    , decodeTtlv
                    ) where
 
-import Data.Binary
-import Data.Binary.Get
-import Data.Binary.Put
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Internal as BS (w2c, c2w)
-import qualified Crypto.Number.Serialize as CN (os2ip, i2osp, i2ospOf_, lengthBytes)
-import Data.Time.Clock.POSIX
-import Data.Maybe
-import Control.Monad
+import           Control.Monad
+import qualified Crypto.Number.Serialize  as CN (i2osp, i2ospOf_, lengthBytes,
+                                                 os2ip)
+import           Data.Binary
+import           Data.Binary.Get
+import           Data.Binary.Put
+import qualified Data.ByteString.Internal as BS (c2w, w2c)
+import qualified Data.ByteString.Lazy     as L
+import           Data.Maybe
+import           Data.Time.Clock.POSIX
 
-import Ttlv.Tag
-import Ttlv.Data
-import qualified Ttlv.Enum as E
+import           Ttlv.Data
+import qualified Ttlv.Enum                as E
+import           Ttlv.Tag
 
 instance Binary Ttlv where
   get = parseTtlv
@@ -143,7 +144,7 @@ ttlvDataLength (TtlvDateTime _) = 8
 ttlvDataLength (TtlvInterval _) = 4 -- w/o padding
 
 ttlvLength :: Ttlv -> Int
-ttlvLength (Ttlv _ d) = 3 + 1 + 4 + (paddedTtlvDataLength d)
+ttlvLength (Ttlv _ d) = 3 + 1 + 4 + paddedTtlvDataLength d
 
 -- put data without padding
 unparseTtlvData :: TtlvData -> Put
@@ -155,7 +156,7 @@ unparseTtlvData (TtlvEnum x) = putWord32be $ fromIntegral x
 unparseTtlvData (TtlvBool x) = if x
                                then putWord64be 1
                                else putWord64be 0
-unparseTtlvData (TtlvString x) = putLazyByteString $ L.pack $ map BS.c2w x 
+unparseTtlvData (TtlvString x) = putLazyByteString $ L.pack $ map BS.c2w x
 unparseTtlvData (TtlvByteString x) = putLazyByteString x
 unparseTtlvData (TtlvDateTime x) = putWord64be $ fromIntegral $ round $ utcTimeToPOSIXSeconds x
 unparseTtlvData (TtlvInterval x) = putWord32be $ fromIntegral x

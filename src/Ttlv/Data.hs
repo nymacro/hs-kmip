@@ -1,11 +1,14 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, DataKinds, DeriveFunctor #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveFunctor     #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TemplateHaskell   #-}
 module Ttlv.Data where
 
-import Ttlv.Tag
+import           Ttlv.Tag
 
-import Control.Lens
-import Data.Time
+import           Control.Lens
 import qualified Data.ByteString.Lazy as L
+import           Data.Time
 
 -- | Tag data
 data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }

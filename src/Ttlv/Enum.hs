@@ -1,6 +1,6 @@
 module Ttlv.Enum where
-import qualified Ttlv.Tag as T
-import Ttlv.Data
+import           Ttlv.Data
+import qualified Ttlv.Tag  as T
 
 -- import Test.Hspec
 
@@ -68,21 +68,21 @@ instance TtlvEnumType WrappingMethod where
   ttlvEnumTag _ = T.WrappingMethod
 
 
-data RecommendedCurve = P192 
-                      | K163 
-                      | B163 
-                      | P224 
-                      | K233 
-                      | B233 
-                      | P256 
-                      | K283 
-                      | B283 
-                      | P384 
-                      | K409 
-                      | B409 
-                      | P521 
-                      | K571 
-                      | B571 
+data RecommendedCurve = P192
+                      | K163
+                      | B163
+                      | P224
+                      | K233
+                      | B233
+                      | P256
+                      | K283
+                      | B283
+                      | P384
+                      | K409
+                      | B409
+                      | P521
+                      | K571
+                      | B571
                       deriving (Show, Eq, Enum)
 instance TtlvEnumType RecommendedCurve where
   ttlvEnumTag _ = T.RecommendedCurve
@@ -160,37 +160,37 @@ instance TtlvEnumType CryptoAlgorithm where
   ttlvEnumTag _ = T.CryptographicAlgorithm
 
 
-data BlockCipherMode = CBC 
-                     | ECB 
-                     | PCBC 
-                     | CFB 
-                     | OFB 
-                     | CTR 
-                     | CMAC 
-                     | CCM 
-                     | GCM 
-                     | CBCMAC 
-                     | XTS 
-                     | AESKeyWrapPadding 
-                     | NISTKeyWrap 
-                     | X9102AESKW 
-                     | X9102TDKW 
-                     | X9102AKW1 
-                     | X9102AKW2 
+data BlockCipherMode = CBC
+                     | ECB
+                     | PCBC
+                     | CFB
+                     | OFB
+                     | CTR
+                     | CMAC
+                     | CCM
+                     | GCM
+                     | CBCMAC
+                     | XTS
+                     | AESKeyWrapPadding
+                     | NISTKeyWrap
+                     | X9102AESKW
+                     | X9102TDKW
+                     | X9102AKW1
+                     | X9102AKW2
                      deriving (Show, Eq, Enum)
 instance TtlvEnumType BlockCipherMode where
   ttlvEnumTag _ = T.BlockCipherMode
 
 
-data PaddingMethod = None 
-                   | OAEP 
-                   | PKCS5 
-                   | SSL3 
-                   | Zeros 
-                   | ANSIX923 
-                   | ISO10126 
-                   | PKCS1v15 
-                   | X931 
+data PaddingMethod = None
+                   | OAEP
+                   | PKCS5
+                   | SSL3
+                   | Zeros
+                   | ANSIX923
+                   | ISO10126
+                   | PKCS1v15
+                   | X931
                    | PSS
                    deriving (Show, Eq, Enum)
 instance TtlvEnumType PaddingMethod where

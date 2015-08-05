@@ -1,13 +1,14 @@
 -- KMIP Structure Validation
-{-# LANGUAGE TypeOperators, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeOperators     #-}
 module Ttlv.Validator.Structures where
 
-import Ttlv.Tag
-import Ttlv.Data
-import Control.Lens
-import Data.Either
+import           Control.Lens
+import           Data.Either
+import           Ttlv.Data
+import           Ttlv.Tag
 
-import Control.Applicative
+import           Control.Applicative
 
 -- TODO fail on input which has not been validated.
 --      `TtlvParser'`s b could be (* Ttlv, Ttlv), one being the full structure,
