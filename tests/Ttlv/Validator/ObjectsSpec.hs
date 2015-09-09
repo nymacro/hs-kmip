@@ -1,12 +1,13 @@
 module Ttlv.Validator.ObjectsSpec where
 
-import Test.Hspec
+import           Test.Hspec
 
-import Ttlv.Data
-import qualified Ttlv.Tag as T
-import Ttlv.Validator.Objects
-import Ttlv.Validator.Structures
-import qualified Ttlv.Enum as TEnum
+import           Control.Applicative       ((<|>))
+import           Ttlv.Data
+import qualified Ttlv.Enum                 as TEnum
+import qualified Ttlv.Tag                  as T
+import           Ttlv.Validator.Objects
+import           Ttlv.Validator.Structures
 
 ttlv :: T.TtlvTag -> TtlvData -> Ttlv
 ttlv t = Ttlv (T.Tag t)
@@ -91,7 +92,7 @@ spec = do
                   apply T.AttributeName (stringEq "y-nope")
         runTtlvParser p xx `shouldBe` Left ["failed combinator", "not an int"]
         runTtlvParser p' xx `shouldBe` Left ["mismatch in expected value"]
-           
+
     describe "Objects" $ do
       describe "Attribute" $ do
         it "valid" $ do

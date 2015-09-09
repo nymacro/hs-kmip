@@ -1,6 +1,7 @@
 -- KMIP Client-to-Server operations
 module Ttlv.Validator.Operations where
 
+import           Control.Applicative       ((<|>))
 import           Ttlv.Data
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Attributes

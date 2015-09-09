@@ -1,17 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ttlv.ParserSpec where
 
-import Ttlv.Data
-import qualified Ttlv.Tag as T
-import Ttlv.Parser
+import           Ttlv.Data
+import           Ttlv.Parser
+import qualified Ttlv.Tag               as T
 
-import Test.Hspec
+import           Test.Hspec
 
-import System.Locale
-import Data.Time
-import Data.Maybe
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Base16 as B16
+import qualified Data.ByteString.Lazy   as L
+import           Data.Maybe
+import           Data.Time
+import           System.Locale
 
 fromHex x = L.fromChunks [fst $ B16.decode x]
 toHex x = map B16.encode (L.toChunks x)
@@ -75,7 +75,7 @@ spec = do
         it "should encode/decode Structure" $ do
           let t = ttlv T.CompromiseDate (TtlvStructure [ttlv T.ApplicationSpecificInformation (TtlvEnum 254), ttlv T.ArchiveDate (TtlvInt 255)])
           (decodeTtlv $ encodeTtlv t) `shouldBe` t
-          
+
       describe "Decode" $ do
         it "should decode Integer" $ do
           decodeTtlv (testTtlvs !! 0) `shouldBe` (ttlv T.CompromiseDate (TtlvInt 8))

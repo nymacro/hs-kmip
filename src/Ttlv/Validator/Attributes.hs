@@ -2,6 +2,7 @@
 
 module Ttlv.Validator.Attributes where
 
+import           Control.Applicative       ((<|>))
 import           Ttlv.Data
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Structures

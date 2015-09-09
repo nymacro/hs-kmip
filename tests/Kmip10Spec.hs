@@ -2,20 +2,20 @@
 -- naming convention: kmip_<KMIP VERSION>__<SECTION VERSION>_<OPERATION>_<REQUEST/RESPONSE>
 module Kmip10Spec where
 
-import Ttlv.Tag
-import Ttlv.Data
-import Ttlv.Parser
+import           Ttlv.Data
+import           Ttlv.Parser
+import           Ttlv.Tag
 
-import Test.Hspec
+import           Test.Hspec
 
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Base16 as B16
+import qualified Data.ByteString.Base16    as B16
+import qualified Data.ByteString.Lazy      as L
 
-import Ttlv.Validator.Message
-import Ttlv.Validator.Objects
-import Ttlv.Validator.Structures
+import           Ttlv.Validator.Message
+import           Ttlv.Validator.Objects
+import           Ttlv.Validator.Structures
 
-import Kmip10Data
+import           Kmip10Data
 
 spec :: Spec
 spec = do

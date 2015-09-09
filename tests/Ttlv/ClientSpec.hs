@@ -1,12 +1,12 @@
 module Ttlv.ClientSpec where
 
-import Kmip.Client
-import Ttlv.Enum
-import Ttlv.Validator.Structures (runTtlvParser)
+import           Kmip.Client
+import           Ttlv.Enum
+import qualified Ttlv.Validator.Message    as M
 import qualified Ttlv.Validator.Objects
-import qualified Ttlv.Validator.Message as M
+import           Ttlv.Validator.Structures (runTtlvParser)
 
-import Test.Hspec
+import           Test.Hspec
 
 spec :: Spec
 spec = do

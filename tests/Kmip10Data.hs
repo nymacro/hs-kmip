@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Kmip10Data where
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Base16 as B16
+import qualified Data.ByteString.Lazy   as L
 
 fromHex x = L.fromChunks [fst $ B16.decode x]
 

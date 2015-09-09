@@ -1,6 +1,7 @@
 -- KMIP Objects
 module Ttlv.Validator.Objects  where
 
+import           Control.Applicative       ((<|>))
 import           Ttlv.Data
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Structures

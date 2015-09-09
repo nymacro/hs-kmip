@@ -4,6 +4,7 @@ module Kmip.Server where
 import           Network.Wai
 import           Web.Scotty
 
+import           Control.Applicative           ((<|>))
 import           Data.Monoid                   (mconcat)
 import           Data.Text.Lazy                (pack)
 
@@ -112,13 +113,13 @@ server = do
       let ttlv'       = decodeTtlv ttlv
           validHtml   = H.div ! class_ "good" $ H.string "Validates"
           invalidHtml = H.div ! class_ "bad"  $ H.string "Failed Validation"
-      either (const invalidHtml) (const validHtml) $ S.runTtlvParser (requestMessage S.<|> responseMessage) ttlv'
+      either (const invalidHtml) (const validHtml) $ S.runTtlvParser (requestMessage <|> responseMessage) ttlv'
       defaultThings $ renderTtlv ttlv'
 
   -- validate request or response
   post "/validate" $ do
     ttlv <- body
-    case S.runTtlvParser (requestMessage S.<|> responseMessage) (decodeTtlv ttlv) of
+    case S.runTtlvParser (requestMessage <|> responseMessage) (decodeTtlv ttlv) of
      Right _ -> html "ok"
      Left  e -> html $ pack $ mconcat (fmap (++ "\n") e)
 

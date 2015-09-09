@@ -9,6 +9,7 @@ import           Ttlv.Data
 import           Ttlv.Tag
 
 import           Control.Applicative
+import           Control.Monad
 
 -- TODO fail on input which has not been validated.
 --      `TtlvParser'`s b could be (* Ttlv, Ttlv), one being the full structure,
@@ -42,24 +43,20 @@ instance Monad (TtlvParser' a) where
 
 -- | Ttlv parser combinator
 infixl 9 <+>
-(<+>) :: TtlvParser Ttlv -> TtlvParser Ttlv -> TtlvParser Ttlv
+(<+>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
 x <+> y = TtlvParser $ \t ->
   case runTtlvParser x t of
     Right t' -> runTtlvParser y t'
     Left e   -> Left $ "failed combinator" : e
 
--- | run one parser or the other
-either :: TtlvParser a -> TtlvParser a -> TtlvParser a
-either x y = TtlvParser $ \t -> case runTtlvParser x t of
-  x'@(Right _) -> x'
-  Left e -> case runTtlvParser y t of
-    y'@(Right _) -> y'
-    Left e' -> Left ["neither matched: " ++ concat e ++ " | " ++ concat e']
-
--- | operator for either
-(<|>) :: TtlvParser a -> TtlvParser a -> TtlvParser a
-(<|>) = Ttlv.Validator.Structures.either
-infixl 8 <|>
+-- | Alternative instance for TtlvParser
+instance Alternative (TtlvParser' a) where
+  x <|> y = TtlvParser $ \t -> case runTtlvParser x t of
+    x'@(Right _) -> x'
+    Left e -> case runTtlvParser y t of
+      y'@(Right _) -> y'
+      Left e' -> Left ["neither matched: " ++ concat e ++ " | " ++ concat e']
+  empty = TtlvParser $ \_ -> Left ["empty"]
 
 -- | on: Ttlv
 --   look at Ttlv and see if it matches
@@ -235,4 +232,3 @@ under tag = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
     Right x -> Right x
     Left y  -> Left y
-

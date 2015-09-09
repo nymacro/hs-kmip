@@ -1,12 +1,12 @@
 module Kmip.Client where
 
-import qualified Ttlv.Tag as T
-import Ttlv.Data
-import Ttlv.Parser
+import           Ttlv.Data
+import           Ttlv.Parser
+import qualified Ttlv.Tag             as T
 -- import Ttlv.Message
 -- import Ttlv.Objects
 -- import Ttlv.Structures
-import Ttlv.Enum
+import           Ttlv.Enum
 
 import qualified Data.ByteString.Lazy as L
 
@@ -75,8 +75,8 @@ createKeyPair com priv pub = batchItem [ enum T.Operation CreateKeyPair
 -- data KmipContext = KmipContext { getHostname :: String
 --                                , getPort :: Int
 --                                , getSSL :: Bool }
--- 
+--
 -- request :: KmipContext -> Ttlv -> Ttlv
--- request ctx r = 
+-- request ctx r =
 
 
