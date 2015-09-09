@@ -1,6 +1,8 @@
 # hs-kmip
 [![Build Status](https://travis-ci.org/nymacro/hs-kmip.svg?branch=master)](https://travis-ci.org/nymacro/hs-kmip)
 
+GitHub repo is a mirror of https://bitbucket.org/nymacro/hs-kmip/
+
 ## About
 An implementation of the Key Management Interoperability Protocol in Haskell.
 
