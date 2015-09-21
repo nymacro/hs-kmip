@@ -1,5 +1,17 @@
 language: haskell
-ghc:
-  - 7.10
+
+before_install:
+  # Instructions taken from https://github.com/commercialhaskell/stack/wiki/Downloads
+  - wget -q -O- http://download.fpcomplete.com/ubuntu/fpco.key | sudo apt-key add -
+  - echo 'deb http://download.fpcomplete.com/ubuntu/precise stable main' | sudo tee /etc/apt/sources.list.d/fpco.list
+  - sudo apt-get update
+  - sudo apt-get install stack -y
+
+install:
+  - stack setup
+
+script:
+  - stack test
+
 notifications:
   email: false
