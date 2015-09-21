@@ -78,9 +78,11 @@ find tag = TtlvParser $ \t ->
             then Left ["too many/too few " ++ show tag]
             else Right $ head xs
 
+fromLeft :: Either a b -> a
 fromLeft (Left x) = x
 fromLeft (Right _) = undefined
 
+fromRight :: Either a b -> b
 fromRight (Left _) = undefined
 fromRight (Right x) = x
 

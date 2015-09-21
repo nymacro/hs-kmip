@@ -7,14 +7,14 @@ import qualified Ttlv.Tag               as T
 
 import           Test.Hspec
 
+import qualified Data.ByteString        as B
 import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString.Lazy   as L
 import           Data.Maybe
 import           Data.Time
-import           System.Locale
 
+fromHex :: B.ByteString -> L.ByteString
 fromHex x = L.fromChunks [fst $ B16.decode x]
-toHex x = map B16.encode (L.toChunks x)
 
 exampleTtlvs = [ "42002002000000040000000800000000" -- Integer
                , "420020030000000801B69B4BA5749200" -- Long Integer
@@ -28,6 +28,7 @@ exampleTtlvs = [ "42002002000000040000000800000000" -- Integer
                , "42002001000000204200040500000004000000FE000000004200050200000004000000FF00000000" -- Structure
                ]
 
+testTtlvs :: [L.ByteString]
 testTtlvs = map fromHex exampleTtlvs
 
 test :: IO ()
