@@ -9,7 +9,6 @@ import           Ttlv.Data
 import           Ttlv.Tag
 
 import           Control.Applicative
-import           Control.Monad
 
 -- TODO fail on input which has not been validated.
 --      `TtlvParser'`s b could be (* Ttlv, Ttlv), one being the full structure,
@@ -18,13 +17,11 @@ import           Control.Monad
 newtype TtlvParser' a b = TtlvParser { runTtlvParser :: a -> Either [String] b }
 type TtlvParser a = TtlvParser' a a
 
--- derived instance looks like:
 instance Functor (TtlvParser' a) where
   -- fmap fn (TtlvParser x) = TtlvParser ((\b2 b3 -> fmap fn (b2 ((\b1 -> b1) b3))) x)
   -- simplified:
   fmap fn (TtlvParser x) = TtlvParser ((\a b -> fn <$> a b) x)
 
--- Applicative like IO
 instance Applicative (TtlvParser' a) where
   pure = return
   -- f (a -> b) -> f a -> f b
@@ -35,7 +32,6 @@ instance Applicative (TtlvParser' a) where
 
 instance Monad (TtlvParser' a) where
   return x = TtlvParser (\_ -> Right x)
-  -- m a -> (a -> m b) -> m b
   x >>= y = TtlvParser $ \t ->
     case runTtlvParser x t of
       Right t' -> runTtlvParser (y t') t -- is this right?
@@ -126,7 +122,7 @@ tag tag' = TtlvParser $ \t -> if getTtlvTag t == Tag tag'
 string :: TtlvParser Ttlv
 string = TtlvParser $ \t -> case getTtlvData t of
   TtlvString _ -> Right t
-  otherwise -> Left ["not a string"]
+  _ -> Left ["not a string"]
 
 -- | on: Ttlv
 --   check Ttlv data type and value
@@ -135,61 +131,61 @@ stringEq s = TtlvParser $ \t -> case getTtlvData t of
   TtlvString x -> if x == s
                   then Right t
                   else Left ["mismatch in expected value"]
-  otherwise -> Left ["not a string"]
+  _ -> Left ["not a string"]
 
 -- | on: Ttlv
 --   check Ttlv data type
 tstruct :: TtlvParser Ttlv
 tstruct = TtlvParser $ \t -> case getTtlvData t of
   TtlvStructure _ -> Right t
-  otherwise -> Left ["not a structure"]
+  _ -> Left ["not a structure"]
 
 -- | on: Ttlv
 --   check Ttlv data type
 tenum :: TtlvParser Ttlv
 tenum = TtlvParser $ \t -> case getTtlvData t of
   TtlvEnum _ -> Right t
-  otherwise  -> Left ["not an enum"]
+  _ -> Left ["not an enum"]
 
 tbytestring :: TtlvParser Ttlv
 tbytestring = TtlvParser $ \t -> case getTtlvData t of
   TtlvByteString _ -> Right t
-  otherwise  -> Left ["not a byte-string"]
+  _ -> Left ["not a byte-string"]
 
 tstring :: TtlvParser Ttlv
 tstring = TtlvParser $ \t -> case getTtlvData t of
   TtlvString _ -> Right t
-  otherwise  -> Left ["not a string"]
+  _ -> Left ["not a string"]
 
 tbigint :: TtlvParser Ttlv
 tbigint = TtlvParser $ \t -> case getTtlvData t of
   TtlvBigInt _ -> Right t
-  otherwise  -> Left ["not a big int"]
+  _ -> Left ["not a big int"]
 
 tint :: TtlvParser Ttlv
 tint = TtlvParser $ \t -> case getTtlvData t of
   TtlvInt _ -> Right t
-  otherwise  -> Left ["not an int"]
+  _ -> Left ["not an int"]
 
 tlong :: TtlvParser Ttlv
 tlong = TtlvParser $ \t -> case getTtlvData t of
   TtlvLongInt _ -> Right t
-  otherwise  -> Left ["not an int"]
+  _ -> Left ["not an int"]
 
 tinterval :: TtlvParser Ttlv
 tinterval = TtlvParser $ \t -> case getTtlvData t of
   TtlvInterval _ -> Right t
-  otherwise  -> Left ["not an int"]
+  _ -> Left ["not an int"]
 
 tdatetime :: TtlvParser Ttlv
 tdatetime = TtlvParser $ \t -> case getTtlvData t of
   TtlvDateTime _ -> Right t
-  otherwise  -> Left ["not an int"]
+  _ -> Left ["not an int"]
 
 tbool :: TtlvParser Ttlv
 tbool = TtlvParser $ \t -> case getTtlvData t of
   TtlvBool _ -> Right t
-  otherwise  -> Left ["not a bool"]
+  _ -> Left ["not a bool"]
 
 -- | on: Structure
 --   run `parser` on `tag`, returning original Ttlv
@@ -212,25 +208,48 @@ optional tag parser = TtlvParser $ \t ->
       Left y' -> Left y'
     Left _  -> Right t
 
--- | on: *
---   identity for TtlvParser
+-- | identity for TtlvParser
 ok :: TtlvParser Ttlv
 ok = TtlvParser $ \t -> Right t
 
--- | on: *
---   return an error
+-- | Error with message
 nok :: String -> TtlvParser Ttlv
 nok msg = TtlvParser $ \t -> Left [msg]
 
 -- | extract data from ttlv
+--   e.g.
+--     do { x <- get T.AttributeName ; ... }
 get :: TtlvTag -> TtlvParser' Ttlv TtlvData
 get tag = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
     Right x -> Right $ getTtlvData x
     Left y  -> Left y
 
+-- | run TtlvParser on tag in Ttlv
 under :: TtlvTag -> TtlvParser Ttlv
 under tag = TtlvParser $ \t ->
   case runTtlvParser (find tag) t of
     Right x -> Right x
     Left y  -> Left y
+
+-- helper functions
+
+-- | take a Lens getter t and check whether v matches and apply function f to the
+--   value of v
+--   e.g.
+--     with _TtlvInt major $ nokIf (> 0) "failed"
+with t v f = case v ^? t of
+  Just x  -> f x
+  Nothing -> nok "failed"
+
+-- | nok with message `msg` if value `v` applied to condition `c`
+nokIf :: (a -> Bool) -> String -> a -> TtlvParser Ttlv
+nokIf c msg v = if c v
+                then nok msg
+                else ok
+
+-- | inverse of nokIf
+okIf :: (a -> Bool) -> String -> a -> TtlvParser Ttlv
+okIf c msg v = if c v
+               then ok
+               else nok msg

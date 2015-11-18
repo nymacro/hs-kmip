@@ -24,16 +24,19 @@ import           Text.Blaze.Html5              ((!))
 import qualified Text.Blaze.Html5              as H
 import           Text.Blaze.Html5.Attributes
 
-import qualified Data.Text                     as T
+import           Data.Text                     (Text)
 import           Stitch
 import           Stitch.Combinators
 
+mainTitle :: H.Html
 mainTitle = "KMIP Tool"
 
+homePage :: H.Html
 homePage = H.html $ do
   H.head $ H.title mainTitle
   H.body "Hello World!"
 
+stylesheet :: Text
 stylesheet = renderCSS $ do
   "body" ? do
     "background-color" .= "#fffff0"
@@ -89,16 +92,16 @@ renderTtlv t = H.html $
     H.div ! class_ "tagName" $ H.string $ show (getTtlvTag t)
     H.div ! class_ "data" $
       case getTtlvData t of
-       (TtlvStructure  t) -> typeString "Structure"   >> mapM_ renderTtlv t
-       (TtlvInt        t) -> typeString "Int"         >> H.string (show t)
-       (TtlvLongInt    t) -> typeString "Long Int"    >> H.string (show t)
-       (TtlvBigInt     t) -> typeString "Big Int"     >> H.string (show t)
-       (TtlvEnum       t) -> typeString "Enum"        >> H.string (show t)
-       (TtlvBool       t) -> typeString "Bool"        >> H.string (show t)
-       (TtlvString     t) -> typeString "String"      >> H.string (show t)
-       (TtlvByteString t) -> typeString "Byte String" >> H.string (show t)
-       (TtlvDateTime   t) -> typeString "Date Time"   >> H.string (show t)
-       (TtlvInterval   t) -> typeString "Interval"    >> H.string (show t)
+       (TtlvStructure  v) -> typeString "Structure"   >> mapM_ renderTtlv v
+       (TtlvInt        v) -> typeString "Int"         >> H.string (show v)
+       (TtlvLongInt    v) -> typeString "Long Int"    >> H.string (show v)
+       (TtlvBigInt     v) -> typeString "Big Int"     >> H.string (show v)
+       (TtlvEnum       v) -> typeString "Enum"        >> H.string (show v)
+       (TtlvBool       v) -> typeString "Bool"        >> H.string (show v)
+       (TtlvString     v) -> typeString "String"      >> H.string (show v)
+       (TtlvByteString v) -> typeString "Byte String" >> H.string (show v)
+       (TtlvDateTime   v) -> typeString "Date Time"   >> H.string (show v)
+       (TtlvInterval   v) -> typeString "Interval"    >> H.string (show v)
   where typeString s = H.div ! class_ "type" $ H.string s
 
 server :: ScottyM ()

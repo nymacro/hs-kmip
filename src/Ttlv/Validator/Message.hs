@@ -16,16 +16,8 @@ protocolVersion = do
 
   major <- get T.ProtocolVersionMajor
   minor <- get T.ProtocolVersionMinor
-  case major of
-    TtlvInt i -> if i > 1
-                then nok "protocol major version invalid"
-                else ok
-    otherwise -> nok "failure"
-  case minor of
-    TtlvInt i -> if i > 0
-                then nok "protocol minor version invalid"
-                else ok
-    otherwise -> nok "failure"
+  with _TtlvInt major $ nokIf (> 1) "protocol major version invalid"
+  with _TtlvInt minor $ nokIf (> 0) "protocol minor version invalid"
 
 operation = do
   tag T.Operation
