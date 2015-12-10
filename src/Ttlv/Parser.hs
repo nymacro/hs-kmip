@@ -13,6 +13,8 @@ import qualified Data.ByteString.Internal as BS (c2w, w2c)
 import qualified Data.ByteString.Lazy     as L
 import           Data.Maybe
 import           Data.Time.Clock.POSIX
+import           Data.Text.Encoding (decodeUtf8, encodeUtf8)
+import qualified Data.Text                as T
 
 import           Ttlv.Data
 import qualified Ttlv.Enum                as E
@@ -70,7 +72,7 @@ parseTtlvBool = do
 parseTtlvString :: Int -> Get TtlvData
 parseTtlvString n = do
   val <- getLazyByteString $ fromIntegral n
-  return $ TtlvString $ map BS.w2c $ L.unpack val
+  return $ TtlvString $ decodeUtf8 $ L.toStrict val
 
 parseTtlvByteString :: Int -> Get TtlvData
 parseTtlvByteString n = do
@@ -138,7 +140,7 @@ ttlvDataLength (TtlvLongInt _) = 8
 ttlvDataLength (TtlvBigInt x) = CN.lengthBytes x -- w/o padding
 ttlvDataLength (TtlvEnum _) = 4 -- w/o padding
 ttlvDataLength (TtlvBool _) = 8
-ttlvDataLength (TtlvString x) = length x -- w/o padding
+ttlvDataLength (TtlvString x) = fromIntegral $ L.length $ L.fromStrict $ encodeUtf8 $ x -- w/o padding
 ttlvDataLength (TtlvByteString x) = fromIntegral $ L.length x -- w/o padding
 ttlvDataLength (TtlvDateTime _) = 8
 ttlvDataLength (TtlvInterval _) = 4 -- w/o padding
@@ -156,7 +158,7 @@ unparseTtlvData (TtlvEnum x) = putWord32be $ fromIntegral x
 unparseTtlvData (TtlvBool x) = if x
                                then putWord64be 1
                                else putWord64be 0
-unparseTtlvData (TtlvString x) = putLazyByteString $ L.pack $ map BS.c2w x
+unparseTtlvData (TtlvString x) = putLazyByteString $ L.fromStrict $ encodeUtf8 x
 unparseTtlvData (TtlvByteString x) = putLazyByteString x
 unparseTtlvData (TtlvDateTime x) = putWord64be $ fromIntegral $ round $ utcTimeToPOSIXSeconds x
 unparseTtlvData (TtlvInterval x) = putWord32be $ fromIntegral x

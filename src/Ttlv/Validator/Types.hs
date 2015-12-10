@@ -11,6 +11,8 @@ module Ttlv.Validator.Types ( string
                             , tDateTime
                             , tBool) where
 
+import           Data.Text
+
 import           Ttlv.Data
 import           Ttlv.Tag
 import           Ttlv.Validator.Structures
@@ -24,7 +26,7 @@ string = TtlvParser $ \t -> case getTtlvData t of
 
 -- | on: Ttlv
 --   check Ttlv data type and value
-stringEq :: String -> TtlvParser Ttlv
+stringEq :: Text -> TtlvParser Ttlv
 stringEq s = TtlvParser $ \t -> case getTtlvData t of
   TtlvString x -> if x == s
                   then Right t

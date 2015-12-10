@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Ttlv.Data ( TtlvData(..)
                  , Ttlv(..)
                  , Boxable(..)
@@ -10,6 +11,7 @@ import           Ttlv.Tag
 
 import qualified Data.ByteString.Lazy as L
 import           Data.Time
+import           Data.Text
 
 -- | Tag data
 data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
@@ -18,7 +20,7 @@ data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
               | TtlvBigInt { ttlvBigInt :: Integer }
               | TtlvEnum { ttlvEnum :: Int }
               | TtlvBool { ttlvBool :: Bool }
-              | TtlvString { ttlvString :: String }
+              | TtlvString { ttlvString :: Text }
               | TtlvByteString { ttlvByteString :: L.ByteString }
               | TtlvDateTime { ttlvDateTime :: UTCTime }
               | TtlvInterval { ttlvInterval :: Int }
@@ -40,10 +42,16 @@ instance Unboxable Int where
   unbox (TtlvInt a) = Just a
   unbox _ = Nothing
 
-instance Boxable String where
+instance Boxable Text where
   box = TtlvString
-instance Unboxable String where
+instance Unboxable Text where
   unbox (TtlvString a) = Just a
+  unbox _ = Nothing
+
+instance Boxable String where
+  box = TtlvString . pack
+instance Unboxable String where
+  unbox (TtlvString a) = Just $ unpack a
   unbox _ = Nothing
 
 instance Boxable Integer where

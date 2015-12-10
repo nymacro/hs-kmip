@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Ttlv.Validator.ObjectsSpec where
 
 import           Test.Hspec

@@ -27,13 +27,14 @@ module Ttlv.Validator.Objects ( attribute
                               , cryptoObject
                               ) where
 
+import           Data.Text
 import           Control.Applicative       ((<|>))
 import           Ttlv.Data
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Structures
 import           Ttlv.Validator.Types
 
-attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
+attribute :: Text -> TtlvParser Ttlv -> TtlvParser Ttlv
 attribute name vf = do
   tag T.Attribute
   apply    T.AttributeName (stringEq name)
