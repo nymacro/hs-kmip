@@ -3,9 +3,10 @@ module Kmip.Client where
 import           Ttlv.Data
 import           Ttlv.Parser
 import qualified Ttlv.Tag             as T
--- import Ttlv.Message
--- import Ttlv.Objects
--- import Ttlv.Structures
+-- import           Ttlv.Validator.Message
+import           Ttlv.Validator.Objects
+import           Ttlv.Validator.Structures hiding (tag)
+import           Ttlv.Validator.Types
 import           Ttlv.Enum
 
 import qualified Data.ByteString.Lazy as L

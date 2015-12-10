@@ -1,10 +1,37 @@
 -- KMIP Objects
-module Ttlv.Validator.Objects  where
+module Ttlv.Validator.Objects ( attribute
+                              , attribute_
+                              , credential
+                              , credentialValue
+                              , keyBlock
+                              , keyValue
+                              , keyWrappingData
+                              , encryptionKeyInfo
+                              , macSignatureKeyInfo
+                              , keyWrappingSpec
+                              , keyMaterial
+                              , keyMaterialSymmetricKey
+                              , keyMaterialDSAPrivateKey
+                              , keyMaterialDSAPublicKey
+                              , keyMaterialRSAPrivateKey
+                              , keyMaterialRSAPublicKey
+                              , templateAttribute
+                              , certificate
+                              , symmetricKey
+                              , publicKey
+                              , privateKey
+                              , splitKey
+                              , template
+                              , secretData
+                              , opaqueObject
+                              , cryptoObject
+                              ) where
 
 import           Control.Applicative       ((<|>))
 import           Ttlv.Data
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Structures
+import           Ttlv.Validator.Types
 
 attribute :: String -> TtlvParser Ttlv -> TtlvParser Ttlv
 attribute name vf = do

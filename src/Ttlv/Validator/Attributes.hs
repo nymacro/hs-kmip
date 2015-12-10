@@ -1,11 +1,45 @@
 -- KMIP Attribute
-
-module Ttlv.Validator.Attributes where
+module Ttlv.Validator.Attributes ( uniqueIdentifier
+                                 , name
+                                 , objectType
+                                 , cryptographicAlgorithm
+                                 , cryptographicLength
+                                 , cryptographicParameters
+                                 , cryptographicDomainParameters
+                                 , certificateType
+                                 , certificateIdentifier
+                                 , certificateSubject
+                                 , certificateIssuer
+                                 , digest
+                                 , operationPolicyName
+                                 , cryptographicUsageMask
+                                 , leaseTime
+                                 , usageLimits
+                                 , state
+                                 , initialDate
+                                 , activationDate
+                                 , processStartDate
+                                 , protectStopDate
+                                 , deactivationDate
+                                 , destroyDate
+                                 , compromiseOccurrenceDate
+                                 , compromiseDate
+                                 , revocationReason
+                                 , archiveDate
+                                 , objectGroup
+                                 , link
+                                 , applicationSpecificInfo
+                                 , contactInformation
+                                 , lastChangeDate
+                                 , customAttribute
+                                 , anyAttribute
+                                 ) where
 
 import           Control.Applicative       ((<|>))
 import           Ttlv.Data
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Structures
+import           Ttlv.Validator.Types
 
 uniqueIdentifier :: TtlvParser Ttlv
 uniqueIdentifier = tag T.UniqueIdentifier <+>
@@ -126,36 +160,36 @@ customAttribute = tag T.CustomAttribute <+>
                   ok -- TODO disallow sub-structures
 
 -- any attribute
-any = uniqueIdentifier <|>
-      name <|>
-      objectType <|>
-      cryptographicAlgorithm <|>
-      cryptographicLength <|>
-      cryptographicParameters <|>
-      cryptographicDomainParameters <|>
-      certificateType <|>
-      certificateIdentifier <|>
-      certificateSubject <|>
-      certificateIssuer <|>
-      digest <|>
-      operationPolicyName <|>
-      cryptographicUsageMask <|>
-      leaseTime <|>
-      usageLimits <|>
-      state <|>
-      initialDate <|>
-      activationDate <|>
-      processStartDate <|>
-      protectStopDate <|>
-      deactivationDate <|>
-      destroyDate <|>
-      compromiseOccurrenceDate <|>
-      compromiseDate <|>
-      revocationReason <|>
-      archiveDate <|>
-      objectGroup <|>
-      link <|>
-      applicationSpecificInfo <|>
-      contactInformation <|>
-      lastChangeDate <|>
-      customAttribute
+anyAttribute = uniqueIdentifier <|>
+               name <|>
+               objectType <|>
+               cryptographicAlgorithm <|>
+               cryptographicLength <|>
+               cryptographicParameters <|>
+               cryptographicDomainParameters <|>
+               certificateType <|>
+               certificateIdentifier <|>
+               certificateSubject <|>
+               certificateIssuer <|>
+               digest <|>
+               operationPolicyName <|>
+               cryptographicUsageMask <|>
+               leaseTime <|>
+               usageLimits <|>
+               state <|>
+               initialDate <|>
+               activationDate <|>
+               processStartDate <|>
+               protectStopDate <|>
+               deactivationDate <|>
+               destroyDate <|>
+               compromiseOccurrenceDate <|>
+               compromiseDate <|>
+               revocationReason <|>
+               archiveDate <|>
+               objectGroup <|>
+               link <|>
+               applicationSpecificInfo <|>
+               contactInformation <|>
+               lastChangeDate <|>
+               customAttribute

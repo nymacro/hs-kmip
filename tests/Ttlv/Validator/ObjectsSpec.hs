@@ -8,6 +8,7 @@ import qualified Ttlv.Enum                 as TEnum
 import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Objects
 import           Ttlv.Validator.Structures
+import           Ttlv.Validator.Types
 
 ttlv :: T.TtlvTag -> TtlvData -> Ttlv
 ttlv t = Ttlv (T.Tag t)

@@ -1,8 +1,21 @@
-module Ttlv.Enum where
+module Ttlv.Enum ( TtlvEnumType(..)
+                 , CredentialType(..)
+                 , KeyCompressionType(..)
+                 , KeyFormatType(..)
+                 , WrappingMethod(..)
+                 , RecommendedCurve(..)
+                 , CertificateType(..)
+                 , SplitKeyMethod(..)
+                 , SecretDataType(..)
+                 , NameType(..)
+                 , ObjectType(..)
+                 , CryptoAlgorithm(..)
+                 , BlockCipherMode(..)
+                 , PaddingMethod(..)
+                 , Operation(..) ) where
+
 import           Ttlv.Data
 import qualified Ttlv.Tag  as T
-
--- import Test.Hspec
 
 class Enum a => TtlvEnumType a where
   toTtlvEnum :: Int -> a

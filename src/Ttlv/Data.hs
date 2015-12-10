@@ -1,12 +1,13 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TemplateHaskell   #-}
-module Ttlv.Data where
+module Ttlv.Data ( TtlvData(..)
+                 , Ttlv(..)
+                 , Boxable(..)
+                 , Unboxable(..) ) where
 
 import           Ttlv.Tag
 
-import           Control.Lens
 import qualified Data.ByteString.Lazy as L
 import           Data.Time
 
@@ -26,12 +27,6 @@ data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
 -- | Data type representing Ttlv-encoding of KMIP message
 data Ttlv = Ttlv { getTtlvTag :: Tag, getTtlvData :: TtlvData }
           deriving (Show, Eq)
-
-makeLenses ''Ttlv
-makeLenses ''Tag'
-
-makePrisms ''TtlvData
-makePrisms ''TtlvTag
 
 class Boxable a where
   box :: a -> TtlvData

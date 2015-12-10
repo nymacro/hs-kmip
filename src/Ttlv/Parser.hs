@@ -114,7 +114,7 @@ parseTtlv = do
         8  -> runGet (parseTtlvByteString $ fromIntegral len) val
         9  -> runGet parseTtlvDateTime val
         10 -> runGet parseTtlvInterval val
-        otherwise -> error "unknown type")
+        _  -> error "unknown type")
 
 -- | Retrieve the corresponding ID for TtlvData
 ttlvDataType :: TtlvData -> Int

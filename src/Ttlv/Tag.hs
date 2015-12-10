@@ -1,5 +1,12 @@
 {-# LANGUAGE DeriveFunctor #-}
-module Ttlv.Tag where
+module Ttlv.Tag ( TtlvVersion
+                , TtlvTag(..)
+                , Tag
+                , Tag'(..)
+                , fromTtlvTag
+                , toTtlvTag
+                , toTag
+                , fromTag ) where
 
 data TtlvVersion = TtlvVersion Int Int deriving (Show, Eq)
 -- ttlvTagVersion :: TtlvTag -> TtlvVersion
@@ -256,3 +263,4 @@ ttlvTagVersion' x | x >= 0x420001 && x <= 0x4200A1 = Just $ TtlvVersion 1 0
 
 ttlvTagVersion :: TtlvTag -> Maybe TtlvVersion
 ttlvTagVersion = ttlvTagVersion' . fromTtlvTag
+

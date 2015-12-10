@@ -13,12 +13,12 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Ttlv
-                     , Ttlv.Parser
+  exposed-modules:     Ttlv.Parser
                      , Ttlv.Enum
                      , Ttlv.Data
                      , Ttlv.Tag
-                     , Ttlv.Validator
+                     , Ttlv.Lens
+                     , Ttlv.Validator.Types
                      , Ttlv.Validator.Structures
                      , Ttlv.Validator.Message
                      , Ttlv.Validator.Objects

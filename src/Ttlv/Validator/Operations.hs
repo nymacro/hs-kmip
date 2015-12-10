@@ -7,6 +7,7 @@ import qualified Ttlv.Tag                  as T
 import           Ttlv.Validator.Attributes
 import           Ttlv.Validator.Objects
 import           Ttlv.Validator.Structures
+import           Ttlv.Validator.Types
 
 requestOperationFor :: Int -> Maybe (TtlvParser Ttlv)
 requestOperationFor t = case t of
