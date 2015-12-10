@@ -43,118 +43,118 @@ import           Ttlv.Validator.Types
 
 uniqueIdentifier :: TtlvParser Ttlv
 uniqueIdentifier = tag T.UniqueIdentifier <+>
-                   tstring
+                   tString
 
 name :: TtlvParser Ttlv
 name = tag T.Name <+>
-       apply T.NameValue tstring <+>
-       apply T.NameType tenum
+       apply T.NameValue tString <+>
+       apply T.NameType tEnum
 
 objectType :: TtlvParser Ttlv
 objectType = tag T.ObjectType <+>
-             tenum
+             tEnum
 
 cryptographicAlgorithm :: TtlvParser Ttlv
 cryptographicAlgorithm = tag T.CryptographicAlgorithm <+>
-                         tenum
+                         tEnum
 
 cryptographicLength :: TtlvParser Ttlv
 cryptographicLength = tag T.CryptographicLength <+>
-                      tint
+                      tInt
 
 cryptographicParameters = tag T.CryptographicParameters <+>
-                          optional T.BlockCipherMode tenum <+>
-                          optional T.PaddingMethod tenum <+>
-                          optional T.HashingAlgorithm tenum <+>
-                          optional T.KeyRoleType tenum
+                          optional T.BlockCipherMode tEnum <+>
+                          optional T.PaddingMethod tEnum <+>
+                          optional T.HashingAlgorithm tEnum <+>
+                          optional T.KeyRoleType tEnum
 
 cryptographicDomainParameters = tag T.CryptographicDomainParameters <+>
-                                optional T.Qlength tint <+>
-                                optional T.RecommendedCurve tenum
+                                optional T.Qlength tInt <+>
+                                optional T.RecommendedCurve tEnum
 
 certificateType = tag T.CertificateType <+>
-                  tenum
+                  tEnum
 
 certificateIdentifier = tag      T.CertificateIdentifier <+>
-                        apply    T.Issuer tstring <+>
-                        optional T.SerialNumber tstring
+                        apply    T.Issuer tString <+>
+                        optional T.SerialNumber tString
 
 certificateSubject = tag   T.CertificateSubject <+>
-                     apply T.CertificateSubjectDistinguishedName tstring <+>
-                     many  T.CertificateSubjectAlternativeName tstring
+                     apply T.CertificateSubjectDistinguishedName tString <+>
+                     many  T.CertificateSubjectAlternativeName tString
 
 certificateIssuer = tag   T.CertificateIssuer <+>
-                    apply T.CertificateIssuerDistinguishedName tstring <+>
-                    many  T.CertificateIssuerAlternativeName tstring
+                    apply T.CertificateIssuerDistinguishedName tString <+>
+                    many  T.CertificateIssuerAlternativeName tString
 
 digest = tag T.Digest <+>
-         apply T.HashingAlgorithm tenum <+>
-         apply T.DigestValue tbytestring
+         apply T.HashingAlgorithm tEnum <+>
+         apply T.DigestValue tByteString
 
 operationPolicyName = tag T.OperationPolicyName <+>
-                      tstring
+                      tString
 
 cryptographicUsageMask = tag T.CryptographicUsageMask <+>
-                         tint
+                         tInt
 
 leaseTime = tag T.LeaseTime <+>
-            tinterval
+            tInterval
 
 usageLimits = tag T.UsageLimits <+>
-              apply T.UsageLimitsTotal tlong <+>
-              apply T.UsageLimitsCount tlong <+>
-              apply T.UsageLimitsUnit tlong
+              apply T.UsageLimitsTotal tLong <+>
+              apply T.UsageLimitsCount tLong <+>
+              apply T.UsageLimitsUnit tLong
 
 state = tag T.State <+>
-        tenum
+        tEnum
 
 initialDate = tag T.InitialDate <+>
-              tdatetime
+              tDateTime
 
 activationDate = tag T.ActivationDate <+>
-                 tdatetime
+                 tDateTime
 
 processStartDate = tag T.ProcessStartDate <+>
-                   tdatetime
+                   tDateTime
 
 protectStopDate = tag T.ProcessStartDate <+>
-                  tdatetime
+                  tDateTime
 
 deactivationDate = tag T.DeactivationDate <+>
-                   tdatetime
+                   tDateTime
 
 destroyDate = tag T.DestroyDate <+>
-              tdatetime
+              tDateTime
 
 compromiseOccurrenceDate = tag T.CompromiseOccurrenceDate <+>
-                           tdatetime
+                           tDateTime
 
 compromiseDate = tag T.CompromiseDate <+>
-                 tdatetime
+                 tDateTime
 
 revocationReason = tag T.RevocationReason <+>
-                   apply T.RevocationReasonCode tenum <+>
-                   optional T.RevocationMessage tstring
+                   apply T.RevocationReasonCode tEnum <+>
+                   optional T.RevocationMessage tString
 
 archiveDate = tag T.ArchiveDate <+>
-              tdatetime
+              tDateTime
 
 objectGroup = tag T.ObjectGroup <+>
-              tstring
+              tString
 
 link = tag T.Link <+>
-       apply T.LinkType tenum <+>
-       apply T.LinkedObjectIdentifier tstring
+       apply T.LinkType tEnum <+>
+       apply T.LinkedObjectIdentifier tString
 
 applicationSpecificInfo = tag T.ApplicationSpecificInformation <+>
-                          apply T.ApplicationNamespace tstring <+>
-                          apply T.ApplicationData tstring
+                          apply T.ApplicationNamespace tString <+>
+                          apply T.ApplicationData tString
 
 contactInformation = tag T.ContactInformation <+>
-                     tstring
+                     tString
 
 lastChangeDate = tag T.LastChangeDate <+>
-                 tdatetime
+                 tDateTime
 
 customAttribute = tag T.CustomAttribute <+>
                   ok -- TODO disallow sub-structures

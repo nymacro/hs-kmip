@@ -128,10 +128,10 @@ responseOperation = createResponse <|>
 serverRequestOperation = serverNotifyRequest <|>
                          serverPutRequest
 
-createRequest = apply T.ObjectType tenum <+>
+createRequest = apply T.ObjectType tEnum <+>
                 apply T.TemplateAttribute templateAttribute
 
-createResponse = apply T.ObjectType tenum <+>
+createResponse = apply T.ObjectType tEnum <+>
                  apply T.UniqueIdentifier uniqueIdentifier <+>
                  optional T.TemplateAttribute templateAttribute
 
@@ -144,7 +144,7 @@ createKeyPairResponse = apply T.PrivateKeyUniqueIdentifier uniqueIdentifier <+>
                         optional T.PrivateKeyTemplateAttribute templateAttribute <+>
                         optional T.PublicKeyTemplateAttribute templateAttribute
 
-registerRequest = apply T.ObjectType tenum <+>
+registerRequest = apply T.ObjectType tEnum <+>
                   apply T.TemplateAttribute templateAttribute <+>
                   cryptoObject
 
@@ -152,7 +152,7 @@ registerResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
                    optional T.TemplateAttribute templateAttribute
 
 reKeyRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
-               optional T.Offset tinterval <+>
+               optional T.Offset tInterval <+>
                optional T.TemplateAttribute templateAttribute
 
 reKeyResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
@@ -162,8 +162,8 @@ deriveKeyRequest = nok "derive key not implemented"
 deriveKeyResponse = nok "derive key not implemented"
 
 certifyRequest  = optional T.UniqueIdentifier uniqueIdentifier <+>
-                  apply T.CertificateRequestType tenum <+>
-                  apply T.CertificateRequest tbytestring <+>
+                  apply T.CertificateRequestType tEnum <+>
+                  apply T.CertificateRequest tByteString <+>
                   optional T.TemplateAttribute templateAttribute
 
 certifyResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
@@ -173,28 +173,28 @@ reCertifyRequest = nok "re-certify not implemented"
 reCertifyResponse = nok "re-certify not implemented"
 
 
-locateRequest = optional T.MaximumItems tint <+>
-                optional T.StorageStatusMask tint <+>
+locateRequest = optional T.MaximumItems tInt <+>
+                optional T.StorageStatusMask tInt <+>
                 many T.Attribute attribute_
 
 locateResponse = many T.UniqueIdentifier uniqueIdentifier
 
 checkRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
-               optional T.UsageLimitsCount tint <+> -- ???
-               optional T.CryptographicUsageMask tint <+>
-               optional T.LeaseTime tinterval -- ???
+               optional T.UsageLimitsCount tInt <+> -- ???
+               optional T.CryptographicUsageMask tInt <+>
+               optional T.LeaseTime tInterval -- ???
 
 checkResponse = apply T.UniqueIdentifier uniqueIdentifier <+>
-                optional T.UsageLimitsCount tint <+> -- ???
-                optional T.CryptographicUsageMask tint <+>
-                optional T.LeaseTime tinterval -- ???
+                optional T.UsageLimitsCount tInt <+> -- ???
+                optional T.CryptographicUsageMask tInt <+>
+                optional T.LeaseTime tInterval -- ???
 
 getRequest = optional T.UniqueIdentifier uniqueIdentifier <+>
-             optional T.KeyFormatType tenum <+>
-             optional T.KeyCompressionType tenum <+>
-             optional T.KeyWrappingSpecification tenum
+             optional T.KeyFormatType tEnum <+>
+             optional T.KeyCompressionType tEnum <+>
+             optional T.KeyWrappingSpecification tEnum
 
-getResponse = apply T.ObjectType tenum <+>
+getResponse = apply T.ObjectType tEnum <+>
               apply T.UniqueIdentifier uniqueIdentifier <+>
               cryptoObject
 
@@ -203,7 +203,7 @@ getResponse = apply T.ObjectType tenum <+>
 
 getAttributeRequest = do
   optional T.UniqueIdentifier uniqueIdentifier
-  many     T.AttributeName tstring
+  many     T.AttributeName tString
 
 getAttributeResponse = do
   apply    T.UniqueIdentifier uniqueIdentifier
@@ -234,8 +234,8 @@ modifyAttributeResponse = do
 
 deleteAttributeRequest = do
   optional T.UniqueIdentifier uniqueIdentifier
-  apply    T.AttributeName tstring
-  optional T.AttributeIndex tint
+  apply    T.AttributeName tString
+  optional T.AttributeIndex tInt
 
 deleteAttributeResponse = do
   apply    T.UniqueIdentifier uniqueIdentifier
@@ -246,12 +246,12 @@ obtainLeaseRequest = do
 
 obtainLeaseResponse = do
   apply    T.UniqueIdentifier uniqueIdentifier
-  apply    T.LeaseTime tinterval
-  apply    T.LastChangeDate tdatetime
+  apply    T.LeaseTime tInterval
+  apply    T.LastChangeDate tDateTime
 
 getUsageAllocationRequest = do
   optional T.UniqueIdentifier uniqueIdentifier
-  apply    T.UsageLimitsCount tint
+  apply    T.UsageLimitsCount tInt
 
 getUsageAllocationResponse = do
   apply    T.UniqueIdentifier uniqueIdentifier
@@ -265,7 +265,7 @@ activateResponse = do
 revokeRequest = do
   optional T.UniqueIdentifier uniqueIdentifier
   apply    T.RevocationReason revocationReason
-  optional T.CompromiseOccurrenceDate tdatetime
+  optional T.CompromiseOccurrenceDate tDateTime
 
 revokeResponse = do
   apply    T.UniqueIdentifier uniqueIdentifier
@@ -291,19 +291,19 @@ recoverResponse = do
 validateRequest = do
   many     T.Certificate certificate
   many     T.UniqueIdentifier uniqueIdentifier
-  optional T.ValidityDate tdatetime
+  optional T.ValidityDate tDateTime
 
 validateResponse = do
-  apply    T.ValidityIndicator tenum
+  apply    T.ValidityIndicator tEnum
 
 queryRequest = do
-  apply    T.QueryFunction tenum
+  apply    T.QueryFunction tEnum
 
 queryResponse = do
-  many     T.Operation tenum
-  many     T.ObjectType tenum
-  optional T.VendorIdentification tstring
-  optional T.ServerInformation tstring
+  many     T.Operation tEnum
+  many     T.ObjectType tEnum
+  optional T.VendorIdentification tString
+  optional T.ServerInformation tString
   many     T.ApplicationNamespace applicationSpecificInfo
 
 cancelRequest = do
@@ -326,7 +326,7 @@ serverNotifyRequest = do
 
 serverPutRequest = do
   apply    T.UniqueIdentifier uniqueIdentifier
-  apply    T.PutFunction tenum
+  apply    T.PutFunction tEnum
   optional T.ReplacedUniqueIdentifier uniqueIdentifier
   cryptoObject
   many     T.Attribute attribute_

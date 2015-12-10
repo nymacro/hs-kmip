@@ -38,19 +38,19 @@ attribute name vf = do
   tag T.Attribute
   apply    T.AttributeName (stringEq name)
   apply    T.AttributeValue vf
-  optional T.AttributeIndex tint
+  optional T.AttributeIndex tInt
 
 attribute_ :: TtlvParser Ttlv
 attribute_ = do
   tag T.Attribute
   apply    T.AttributeName ok
   apply    T.AttributeValue ok
-  optional T.AttributeIndex tint
+  optional T.AttributeIndex tInt
 
 credential :: TtlvParser Ttlv
 credential = do
   tag T.Credential
-  apply T.CredentialType tenum
+  apply T.CredentialType tEnum
   apply T.CredentialValue credentialValue
 
 credentialValue :: TtlvParser Ttlv
@@ -61,12 +61,12 @@ credentialValue = do
 keyBlock :: TtlvParser Ttlv
 keyBlock = do
   tag      T.KeyBlock
-  apply    T.KeyFormatType tenum
-  optional T.KeyCompressionType tenum
+  apply    T.KeyFormatType tEnum
+  optional T.KeyCompressionType tEnum
   apply    T.KeyValue keyValue
-  optional T.CryptographicAlgorithm tenum  -- FIXME
-  optional T.CryptographicLength tint   -- FIXME
-  optional T.KeyWrappingData tstruct -- FIXME
+  optional T.CryptographicAlgorithm tEnum  -- FIXME
+  optional T.CryptographicLength tInt   -- FIXME
+  optional T.KeyWrappingData tStruct -- FIXME
 
 keyValue :: TtlvParser Ttlv
 keyValue = do
@@ -76,28 +76,28 @@ keyValue = do
 keyWrappingData :: TtlvParser Ttlv
 keyWrappingData = do
   --tag      T.WrappingData <+>
-  apply    T.WrappingMethod tenum
+  apply    T.WrappingMethod tEnum
   optional T.EncryptionKeyInformation encryptionKeyInfo
   optional T.MACSignatureKeyInformation macSignatureKeyInfo
-  optional T.MACSignature tbytestring
-  optional T.IVCounterNonce tbytestring
+  optional T.MACSignature tByteString
+  optional T.IVCounterNonce tByteString
 
 encryptionKeyInfo :: TtlvParser Ttlv
 encryptionKeyInfo = do
-  apply    T.UniqueIdentifier tstring
-  optional T.CryptographicParameters tstruct
+  apply    T.UniqueIdentifier tString
+  optional T.CryptographicParameters tStruct
 
 macSignatureKeyInfo :: TtlvParser Ttlv
 macSignatureKeyInfo = do
-  apply    T.UniqueIdentifier tstring
-  optional T.CryptographicParameters tstruct
+  apply    T.UniqueIdentifier tString
+  optional T.CryptographicParameters tStruct
 
 
 keyWrappingSpec :: TtlvParser Ttlv
 keyWrappingSpec = do
-  apply    T.WrappingMethod tenum
-  optional T.EncryptionKeyInformation tstruct
-  optional T.MACSignatureKeyInformation tstruct
+  apply    T.WrappingMethod tEnum
+  optional T.EncryptionKeyInformation tStruct
+  optional T.MACSignatureKeyInformation tStruct
   many     T.Attribute attribute_
 
 keyMaterial :: TtlvParser Ttlv
@@ -108,43 +108,43 @@ keyMaterial = keyMaterialSymmetricKey <|>
               keyMaterialRSAPublicKey
 
 keyMaterialSymmetricKey :: TtlvParser Ttlv
-keyMaterialSymmetricKey = apply T.Key tbytestring
+keyMaterialSymmetricKey = apply T.Key tByteString
 
 keyMaterialDSAPrivateKey :: TtlvParser Ttlv
 keyMaterialDSAPrivateKey = do
-  apply T.P tbigint
-  apply T.Q tbigint
-  apply T.G tbigint
-  apply T.X tbigint
+  apply T.P tBigInt
+  apply T.Q tBigInt
+  apply T.G tBigInt
+  apply T.X tBigInt
 
 keyMaterialDSAPublicKey :: TtlvParser Ttlv
 keyMaterialDSAPublicKey = do
-  apply T.P tbigint
-  apply T.Q tbigint
-  apply T.G tbigint
-  apply T.Y tbigint
+  apply T.P tBigInt
+  apply T.Q tBigInt
+  apply T.G tBigInt
+  apply T.Y tBigInt
 
 keyMaterialRSAPrivateKey :: TtlvParser Ttlv
 keyMaterialRSAPrivateKey = do
-  optional T.Modulus tbigint
-  optional T.PrivateExponent tbigint
-  optional T.PublicExponent tbigint
-  optional T.P tbigint
-  optional T.Q tbigint
-  optional T.PrimeExponentP tbigint
-  optional T.PrimeExponentQ tbigint
-  optional T.CRTCoefficient tbigint
+  optional T.Modulus tBigInt
+  optional T.PrivateExponent tBigInt
+  optional T.PublicExponent tBigInt
+  optional T.P tBigInt
+  optional T.Q tBigInt
+  optional T.PrimeExponentP tBigInt
+  optional T.PrimeExponentQ tBigInt
+  optional T.CRTCoefficient tBigInt
 
 keyMaterialRSAPublicKey :: TtlvParser Ttlv
 keyMaterialRSAPublicKey = do
-  apply T.Modulus tbigint
-  apply T.PublicExponent tbigint
+  apply T.Modulus tBigInt
+  apply T.PublicExponent tBigInt
 
 -- TODO DH/ECDSA/ECDH/ECMQV key materials
 
 templateAttribute :: TtlvParser Ttlv
 templateAttribute = do
-  optional T.Name tstruct
+  optional T.Name tStruct
   optional T.Attribute attribute_
 
 
@@ -152,8 +152,8 @@ templateAttribute = do
 certificate :: TtlvParser Ttlv
 certificate = do
   tag   T.Certificate
-  apply T.CertificateType tenum
-  apply T.CertificateValue tbytestring
+  apply T.CertificateType tEnum
+  apply T.CertificateValue tByteString
 
 -- TODO fix key block expectations
 symmetricKey :: TtlvParser Ttlv
@@ -174,11 +174,11 @@ privateKey = do
 splitKey :: TtlvParser Ttlv
 splitKey = do
   tag   T.SplitKey
-  apply T.SplitKeyParts tint
-  apply T.KeyPartIdentifier tint
-  apply T.SplitKeyThreshold tint
-  apply T.SplitKeyMethod tenum
-  apply T.PrimeFieldSize tbigint
+  apply T.SplitKeyParts tInt
+  apply T.KeyPartIdentifier tInt
+  apply T.SplitKeyThreshold tInt
+  apply T.SplitKeyMethod tEnum
+  apply T.PrimeFieldSize tBigInt
   apply T.KeyBlock keyBlock
 
 template :: TtlvParser Ttlv
@@ -190,14 +190,14 @@ template = do
 secretData :: TtlvParser Ttlv
 secretData = do
   tag   T.SecretData
-  apply T.SecretDataType tenum
+  apply T.SecretDataType tEnum
   apply T.KeyBlock keyBlock
 
 opaqueObject :: TtlvParser Ttlv
 opaqueObject = do
   tag   T.OpaqueObject
-  apply T.OpaqueDataType tenum
-  apply T.OpaqueDataValue tbytestring
+  apply T.OpaqueDataType tEnum
+  apply T.OpaqueDataValue tByteString
 
 cryptoObject :: TtlvParser Ttlv
 cryptoObject = apply T.Certificate certificate <|>

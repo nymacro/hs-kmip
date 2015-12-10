@@ -1,15 +1,15 @@
 module Ttlv.Validator.Types ( string
                             , stringEq
-                            , tstruct
-                            , tenum
-                            , tbytestring
-                            , tstring
-                            , tbigint
-                            , tint
-                            , tlong
-                            , tinterval
-                            , tdatetime
-                            , tbool) where
+                            , tStruct
+                            , tEnum
+                            , tByteString
+                            , tString
+                            , tBigInt
+                            , tInt
+                            , tLong
+                            , tInterval
+                            , tDateTime
+                            , tBool) where
 
 import           Ttlv.Data
 import           Ttlv.Tag
@@ -33,55 +33,55 @@ stringEq s = TtlvParser $ \t -> case getTtlvData t of
 
 -- | on: Ttlv
 --   check Ttlv data type
-tstruct :: TtlvParser Ttlv
-tstruct = TtlvParser $ \t -> case getTtlvData t of
+tStruct :: TtlvParser Ttlv
+tStruct = TtlvParser $ \t -> case getTtlvData t of
   TtlvStructure _ -> Right t
   _ -> Left ["not a structure"]
 
 -- | on: Ttlv
 --   check Ttlv data type
-tenum :: TtlvParser Ttlv
-tenum = TtlvParser $ \t -> case getTtlvData t of
+tEnum :: TtlvParser Ttlv
+tEnum = TtlvParser $ \t -> case getTtlvData t of
   TtlvEnum _ -> Right t
   _ -> Left ["not an enum"]
 
-tbytestring :: TtlvParser Ttlv
-tbytestring = TtlvParser $ \t -> case getTtlvData t of
+tByteString :: TtlvParser Ttlv
+tByteString = TtlvParser $ \t -> case getTtlvData t of
   TtlvByteString _ -> Right t
   _ -> Left ["not a byte-string"]
 
-tstring :: TtlvParser Ttlv
-tstring = TtlvParser $ \t -> case getTtlvData t of
+tString :: TtlvParser Ttlv
+tString = TtlvParser $ \t -> case getTtlvData t of
   TtlvString _ -> Right t
   _ -> Left ["not a string"]
 
-tbigint :: TtlvParser Ttlv
-tbigint = TtlvParser $ \t -> case getTtlvData t of
+tBigInt :: TtlvParser Ttlv
+tBigInt = TtlvParser $ \t -> case getTtlvData t of
   TtlvBigInt _ -> Right t
   _ -> Left ["not a big int"]
 
-tint :: TtlvParser Ttlv
-tint = TtlvParser $ \t -> case getTtlvData t of
+tInt :: TtlvParser Ttlv
+tInt = TtlvParser $ \t -> case getTtlvData t of
   TtlvInt _ -> Right t
   _ -> Left ["not an int"]
 
-tlong :: TtlvParser Ttlv
-tlong = TtlvParser $ \t -> case getTtlvData t of
+tLong :: TtlvParser Ttlv
+tLong = TtlvParser $ \t -> case getTtlvData t of
   TtlvLongInt _ -> Right t
   _ -> Left ["not an int"]
 
-tinterval :: TtlvParser Ttlv
-tinterval = TtlvParser $ \t -> case getTtlvData t of
+tInterval :: TtlvParser Ttlv
+tInterval = TtlvParser $ \t -> case getTtlvData t of
   TtlvInterval _ -> Right t
   _ -> Left ["not an int"]
 
-tdatetime :: TtlvParser Ttlv
-tdatetime = TtlvParser $ \t -> case getTtlvData t of
+tDateTime :: TtlvParser Ttlv
+tDateTime = TtlvParser $ \t -> case getTtlvData t of
   TtlvDateTime _ -> Right t
   _ -> Left ["not an int"]
 
-tbool :: TtlvParser Ttlv
-tbool = TtlvParser $ \t -> case getTtlvData t of
+tBool :: TtlvParser Ttlv
+tBool = TtlvParser $ \t -> case getTtlvData t of
   TtlvBool _ -> Right t
   _ -> Left ["not a bool"]
 

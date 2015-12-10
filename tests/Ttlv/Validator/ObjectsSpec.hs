@@ -56,16 +56,16 @@ spec = do
     describe "monad" $ do
       it "should work correctly with monadic validator" $ do
         let p = do
-              tstruct
+              tStruct
               tag T.Attribute
               apply T.AttributeName (stringEq "x-hi")
         runTtlvParser p xx `shouldBe` Right xx
         let xx' = ttlv T.TemplateAttribute (TtlvStructure [ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
                                                                                            , ttlv T.AttributeValue (TtlvString "hello") ] ) ] )
             p' = do
-              tstruct
+              tStruct
               apply T.Attribute $ do
-                tstruct
+                tStruct
                 apply T.AttributeName  (stringEq "x-hi")
                 apply T.AttributeValue (stringEq "hello")
         runTtlvParser p' xx' `shouldBe` Right xx'
@@ -74,7 +74,7 @@ spec = do
         let xx' = ttlv T.TemplateAttribute (TtlvStructure [ttlv T.Attribute (TtlvStructure [ ttlv T.AttributeName (TtlvString "x-hi")
                                                                                            , ttlv T.AttributeValue (TtlvString "hello") ] ) ] )
             p = do
-              tstruct
+              tStruct
               apply T.Attribute $ do
                 x <- get T.AttributeName
                 if x == TtlvString "x-hi"
@@ -84,11 +84,11 @@ spec = do
 
       it "should fail if validation fails" $ do
         let p = do
-              tint
+              tInt
               tag T.Attribute
               apply T.AttributeName (stringEq "x-hi")
             p' = do
-                  tstruct
+                  tStruct
                   tag T.Attribute
                   apply T.AttributeName (stringEq "y-nope")
         runTtlvParser p xx `shouldBe` Left ["failed combinator", "not an int"]
@@ -99,7 +99,7 @@ spec = do
         it "valid" $ do
           runTtlvParser (attribute "x-hi" string) xx `shouldBe` Right xx
         it "unexpected attribute" $ do
-          runTtlvParser (attribute "x-hi" tint) xx `shouldBe` Left ["failed combinator", "not an int"]
+          runTtlvParser (attribute "x-hi" tInt) xx `shouldBe` Left ["failed combinator", "not an int"]
       describe "Credential" $ do
         it "valid" $ do
           runTtlvParser credential zz `shouldBe` Right zz

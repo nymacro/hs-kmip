@@ -13,8 +13,8 @@ import           Control.Monad             (when)
 -- Contents
 protocolVersion = do
   tag T.ProtocolVersion
-  apply T.ProtocolVersionMajor tint
-  apply T.ProtocolVersionMinor tint
+  apply T.ProtocolVersionMajor tInt
+  apply T.ProtocolVersionMinor tInt
 
   major <- get T.ProtocolVersionMajor
   minor <- get T.ProtocolVersionMinor
@@ -23,66 +23,66 @@ protocolVersion = do
 
 operation = do
   tag T.Operation
-  tenum
+  tEnum
 
 maximumResponseSize = do
   tag T.MaximumResponseSize
-  tint
+  tInt
 
 uniqueBatchItemId = do
   tag T.UniqueBatchItemID
-  tbytestring
+  tByteString
 
 timeStamp = do
   tag T.TimeStamp
-  tdatetime
+  tDateTime
 
 authentication = do
   tag T.Authentication <+> credential
 
 asynchronousIndicator = do
-  tag T.AsynchronousIndicator <+> tbool
+  tag T.AsynchronousIndicator <+> tBool
 
 asynchronousCorrelationValue = do
-  tag T.AsynchronousCorrelationValue <+> tbytestring
+  tag T.AsynchronousCorrelationValue <+> tByteString
 
 resultStatus = do
-  tag T.ResultStatus <+> tenum
+  tag T.ResultStatus <+> tEnum
 
 resultReason = do
-  tag T.ResultReason <+> tenum
+  tag T.ResultReason <+> tEnum
 
 resultMessage = do
-  tag T.ResultMessage <+> tstring
+  tag T.ResultMessage <+> tString
 
 batchOrderOption = do
-  tag T.BatchOrderOption <+> tbool
+  tag T.BatchOrderOption <+> tBool
 
 batchErrorContinuationOption = do
-  tag T.BatchErrorContinuationOption <+> tenum
+  tag T.BatchErrorContinuationOption <+> tEnum
 
 batchCount = do
-  tag T.BatchCount <+> tint
+  tag T.BatchCount <+> tInt
 
 batchItem = do
-  tag T.BatchItem <+> tstruct
+  tag T.BatchItem <+> tStruct
 
 messageExtension = do
   tag T.MessageExtension
-  apply T.VendorIdentification tstring
-  apply T.CriticalityIndicator tbool
-  apply T.VendorExtension tstruct
+  apply T.VendorIdentification tString
+  apply T.CriticalityIndicator tBool
+  apply T.VendorExtension tStruct
 
 -- Format
 requestMessage = do
   tag T.RequestMessage
-  tstruct
+  tStruct
   apply T.RequestHeader requestHeader
   many1 T.BatchItem requestBatchItem
 
 responseMessage = do
   tag T.ResponseMessage
-  tstruct
+  tStruct
   apply T.ResponseHeader responseHeader
   many1 T.BatchItem responseBatchItem
 
@@ -99,7 +99,7 @@ requestHeader = do
 
 requestBatchItem = do
   tag T.BatchItem
-  tstruct
+  tStruct
   -- apply T.Operation operation
   op <- get T.Operation
   optional T.UniqueBatchItemID uniqueBatchItemId
@@ -117,7 +117,7 @@ responseHeader = do
 
 responseBatchItem = do
   tag T.BatchItem
-  tstruct
+  tStruct
   -- apply T.Operation operation
   op <- get T.Operation
   optional T.UniqueBatchItemID uniqueBatchItemId
