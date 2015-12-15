@@ -9,7 +9,7 @@ module Ttlv.Data ( TtlvData(..)
 
 import           Ttlv.Tag
 
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import           Data.Time
 import           Data.Text
 
@@ -21,7 +21,7 @@ data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
               | TtlvEnum { ttlvEnum :: Int }
               | TtlvBool { ttlvBool :: Bool }
               | TtlvString { ttlvString :: Text }
-              | TtlvByteString { ttlvByteString :: L.ByteString }
+              | TtlvByteString { ttlvByteString :: B.ByteString }
               | TtlvDateTime { ttlvDateTime :: UTCTime }
               | TtlvInterval { ttlvInterval :: Int }
               deriving (Show, Eq)

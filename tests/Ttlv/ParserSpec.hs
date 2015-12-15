@@ -2,7 +2,7 @@
 module Ttlv.ParserSpec where
 
 import           Ttlv.Data
-import           Ttlv.Parser
+import           Ttlv.Parser.Serialize
 import qualified Ttlv.Tag               as T
 
 import           Test.Hspec
@@ -16,6 +16,10 @@ import           Data.Time
 fromHex :: B.ByteString -> L.ByteString
 fromHex x = L.fromChunks [fst $ B16.decode x]
 
+fromHexStrict :: B.ByteString -> B.ByteString
+fromHexStrict x = mconcat [fst $ B16.decode x]
+
+exampleTtlvs :: [B.ByteString]
 exampleTtlvs = [ "42002002000000040000000800000000" -- Integer
                , "420020030000000801B69B4BA5749200" -- Long Integer
                , "42002004000000100000000003FD35EB6BC2DF4618080000" --BigInt
@@ -28,8 +32,8 @@ exampleTtlvs = [ "42002002000000040000000800000000" -- Integer
                , "42002001000000204200040500000004000000FE000000004200050200000004000000FF00000000" -- Structure
                ]
 
-testTtlvs :: [L.ByteString]
-testTtlvs = map fromHex exampleTtlvs
+testTtlvs :: [B.ByteString]
+testTtlvs = map fromHexStrict exampleTtlvs
 
 test :: IO ()
 test = hspec spec
@@ -44,57 +48,57 @@ spec = do
       describe "Encode" $ do
         it "should encode/decode Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvInt 8)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Long Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvLongInt 123456789000000000)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Big Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvBigInt 1234567890000000000000000000)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Big Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvBigInt (-1))
           pending
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Enumeration" $ do
           let t = ttlv T.CompromiseDate (TtlvEnum 255)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Boolean" $ do
           let t = ttlv T.CompromiseDate (TtlvBool True)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode String" $ do
           let t = ttlv T.CompromiseDate (TtlvString "Hello World")
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode ByteString" $ do
-          let t = ttlv T.CompromiseDate (TtlvByteString $ fromHex "010203")
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          let t = ttlv T.CompromiseDate (TtlvByteString $ fromHexStrict "010203")
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode DateTime" $ do
           let t = ttlv T.CompromiseDate (TtlvString "Hello World")
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Interval" $ do
           let t = ttlv T.CompromiseDate (TtlvInterval 864000)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Structure" $ do
           let t = ttlv T.CompromiseDate (TtlvStructure [ttlv T.ApplicationSpecificInformation (TtlvEnum 254), ttlv T.ArchiveDate (TtlvInt 255)])
-          (decodeTtlv $ encodeTtlv t) `shouldBe` t
+          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
 
       describe "Decode" $ do
         it "should decode Integer" $ do
-          decodeTtlv (testTtlvs !! 0) `shouldBe` (ttlv T.CompromiseDate (TtlvInt 8))
+          decodeTtlv (testTtlvs !! 0) `shouldBe` Right (ttlv T.CompromiseDate (TtlvInt 8))
         it "should decode Long Integer" $ do
-          decodeTtlv (testTtlvs !! 1) `shouldBe` (ttlv T.CompromiseDate (TtlvLongInt 123456789000000000))
+          decodeTtlv (testTtlvs !! 1) `shouldBe` Right (ttlv T.CompromiseDate (TtlvLongInt 123456789000000000))
         it "should decode Big Integer" $ do
-          decodeTtlv (testTtlvs !! 2) `shouldBe` (ttlv T.CompromiseDate (TtlvBigInt 1234567890000000000000000000))
+          decodeTtlv (testTtlvs !! 2) `shouldBe` Right (ttlv T.CompromiseDate (TtlvBigInt 1234567890000000000000000000))
         it "should decode Enumeration" $ do
-          decodeTtlv (testTtlvs !! 3) `shouldBe` (ttlv T.CompromiseDate (TtlvEnum 255))
+          decodeTtlv (testTtlvs !! 3) `shouldBe` Right (ttlv T.CompromiseDate (TtlvEnum 255))
         it "should decode Boolean" $ do
-          decodeTtlv (testTtlvs !! 4) `shouldBe` (ttlv T.CompromiseDate (TtlvBool True))
+          decodeTtlv (testTtlvs !! 4) `shouldBe` Right (ttlv T.CompromiseDate (TtlvBool True))
         it "should decode String" $ do
-          decodeTtlv (testTtlvs !! 5) `shouldBe` (ttlv T.CompromiseDate (TtlvString "Hello World"))
+          decodeTtlv (testTtlvs !! 5) `shouldBe` Right (ttlv T.CompromiseDate (TtlvString "Hello World"))
         it "should decode ByteString" $ do
-          decodeTtlv (testTtlvs !! 6) `shouldBe` (ttlv T.CompromiseDate (TtlvByteString (fromHex "010203")))
+          decodeTtlv (testTtlvs !! 6) `shouldBe` Right (ttlv T.CompromiseDate (TtlvByteString (fromHexStrict "010203")))
         it "should decode DateTime" $ do
-          decodeTtlv (testTtlvs !! 7) `shouldBe` (ttlv T.CompromiseDate (TtlvDateTime (fromJust $ parseTime defaultTimeLocale "%F %T %Z" "2008-03-14 11:56:40 UTC")))
+          decodeTtlv (testTtlvs !! 7) `shouldBe` Right (ttlv T.CompromiseDate (TtlvDateTime (fromJust $ parseTime defaultTimeLocale "%F %T %Z" "2008-03-14 11:56:40 UTC")))
         it "should decode Interval" $ do
-          decodeTtlv (testTtlvs !! 8) `shouldBe` (ttlv T.CompromiseDate (TtlvInterval 864000))
+          decodeTtlv (testTtlvs !! 8) `shouldBe` Right (ttlv T.CompromiseDate (TtlvInterval 864000))
         it "should decode Structure" $ do
-          decodeTtlv (testTtlvs !! 9) `shouldBe` (ttlv T.CompromiseDate (TtlvStructure [ttlv T.ApplicationSpecificInformation (TtlvEnum 254), ttlv T.ArchiveDate (TtlvInt 255)]))
+          decodeTtlv (testTtlvs !! 9) `shouldBe` Right (ttlv T.CompromiseDate (TtlvStructure [ttlv T.ApplicationSpecificInformation (TtlvEnum 254), ttlv T.ArchiveDate (TtlvInt 255)]))

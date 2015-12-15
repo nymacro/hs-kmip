@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Ttlv.Parser ( encodeTtlv
-                   , decodeTtlv
-                   ) where
+module Ttlv.Parser.Binary ( encodeTtlv
+                          , decodeTtlv
+                          ) where
 
 import           Control.Monad
 import qualified Crypto.Number.Serialize  as CN (i2osp, i2ospOf_, lengthBytes,
@@ -9,6 +9,7 @@ import qualified Crypto.Number.Serialize  as CN (i2osp, i2ospOf_, lengthBytes,
 import           Data.Binary
 import           Data.Binary.Get
 import           Data.Binary.Put
+import qualified Data.ByteString          as B
 import qualified Data.ByteString.Internal as BS (c2w, w2c)
 import qualified Data.ByteString.Lazy     as L
 import           Data.Maybe
@@ -76,7 +77,7 @@ parseTtlvString n = do
 
 parseTtlvByteString :: Int -> Get TtlvData
 parseTtlvByteString n = do
-  val <- getLazyByteString $ fromIntegral n
+  val <- getByteString $ fromIntegral n
   return $ TtlvByteString val
 
 parseTtlvDateTime :: Get TtlvData
@@ -140,8 +141,8 @@ ttlvDataLength (TtlvLongInt _) = 8
 ttlvDataLength (TtlvBigInt x) = CN.lengthBytes x -- w/o padding
 ttlvDataLength (TtlvEnum _) = 4 -- w/o padding
 ttlvDataLength (TtlvBool _) = 8
-ttlvDataLength (TtlvString x) = fromIntegral $ L.length $ L.fromStrict $ encodeUtf8 $ x -- w/o padding
-ttlvDataLength (TtlvByteString x) = fromIntegral $ L.length x -- w/o padding
+ttlvDataLength (TtlvString x) = fromIntegral $ B.length $ encodeUtf8 $ x -- w/o padding
+ttlvDataLength (TtlvByteString x) = fromIntegral $ B.length x -- w/o padding
 ttlvDataLength (TtlvDateTime _) = 8
 ttlvDataLength (TtlvInterval _) = 4 -- w/o padding
 
@@ -159,7 +160,7 @@ unparseTtlvData (TtlvBool x) = if x
                                then putWord64be 1
                                else putWord64be 0
 unparseTtlvData (TtlvString x) = putLazyByteString $ L.fromStrict $ encodeUtf8 x
-unparseTtlvData (TtlvByteString x) = putLazyByteString x
+unparseTtlvData (TtlvByteString x) = putByteString x
 unparseTtlvData (TtlvDateTime x) = putWord64be $ fromIntegral $ round $ utcTimeToPOSIXSeconds x
 unparseTtlvData (TtlvInterval x) = putWord32be $ fromIntegral x
 
@@ -175,7 +176,7 @@ paddedTtlvDataLength x = ttlvDataLength x
 
 unparseTtlv :: Ttlv -> Put
 unparseTtlv (Ttlv t d) = do
-  putLazyByteString $ encodeTtlvTag $ fromTag t
+  putByteString $ L.toStrict $ encodeTtlvTag $ fromTag t
   putWord8 $ fromIntegral $ ttlvDataType d
   -- this is terrible. Find a better way to do this
   let len = ttlvDataLength d
@@ -187,8 +188,9 @@ unparseTtlv (Ttlv t d) = do
 
 
 -- | Decode a Lazy ByteString into the corresponding Ttlv type
-decodeTtlv :: L.ByteString -> Ttlv
-decodeTtlv = runGet parseTtlv
+decodeTtlv :: B.ByteString -> Either String Ttlv
+-- FIXME does not handle the exception from runGet failing (due to catch requiring IO!)
+decodeTtlv b = Right $ runGet parseTtlv $ L.fromStrict b
 
-encodeTtlv :: Ttlv -> L.ByteString
-encodeTtlv x = runPut $ unparseTtlv x
+encodeTtlv :: Ttlv -> B.ByteString
+encodeTtlv x = L.toStrict $ runPut $ unparseTtlv x

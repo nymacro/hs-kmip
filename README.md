@@ -6,8 +6,6 @@ GitHub repo is a mirror of https://bitbucket.org/nymacro/hs-kmip/
 ## About
 An implementation of the Key Management Interoperability Protocol in Haskell.
 
-This is my first _REAL_ Haskell project, so it might have some problems.
-
 ## Copyright
 ```
 Copyright (c) 2015, Aaron Marks

@@ -11,7 +11,7 @@ import           Data.Text.Lazy                (pack)
 import           Data.ByteString.Base64
 import           Data.ByteString.Lazy          (fromStrict, toStrict)
 
-import           Ttlv.Parser
+import qualified Ttlv.Parser.Serialize         as P
 import           Ttlv.Validator.Message
 import qualified Ttlv.Validator.Structures     as S
 
@@ -27,6 +27,11 @@ import           Text.Blaze.Html5.Attributes
 import           Data.Text                     (Text)
 import           Stitch
 import           Stitch.Combinators
+
+
+decodeTtlv t = case P.decodeTtlvLazy t of
+  Right ttlv -> ttlv
+  Left  e    -> error e
 
 mainTitle :: H.Html
 mainTitle = "KMIP Tool"

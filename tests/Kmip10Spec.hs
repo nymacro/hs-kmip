@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
--- naming convention: kmip_<KMIP VERSION>__<SECTION VERSION>_<OPERATION>_<REQUEST/RESPONSE>
 module Kmip10Spec where
 
 import           Ttlv.Data
-import           Ttlv.Parser
+import           Ttlv.Parser.Serialize
 import           Ttlv.Tag
 
 import           Test.Hspec
 
+import           Data.Either (isRight)
+import qualified Data.ByteString           as B
 import qualified Data.ByteString.Base16    as B16
 import qualified Data.ByteString.Lazy      as L
 
@@ -22,7 +23,11 @@ spec = do
   describe "Use Cases" $ do
     describe "1.0" $ do
       describe "3.1 Basic functionality" $ do
-        let runIt x = encodeTtlv (decodeTtlv x) `shouldBe` x
+        let runIt x = do
+              let ttlv = decodeTtlv x
+              ttlv `shouldSatisfy` isRight
+              let Right ttlv' = ttlv
+              encodeTtlv ttlv' `shouldBe` x
         it "3.1.1 Create / Destroy" $ do
           runIt kmip_1_0__3_1_1_create_request
           runIt kmip_1_0__3_1_1_create_response
@@ -84,8 +89,11 @@ spec = do
           runIt kmip_1_0__3_1_5_destroy_response
 
     describe "1.0 Validation" $ do
-      let runIt x y = let j = decodeTtlv y
-                      in runTtlvParser x j `shouldBe` Right j
+      let runIt x y = do
+            let j = decodeTtlv y
+            j `shouldSatisfy` isRight
+            let Right ttlv = j
+            runTtlvParser x ttlv `shouldBe` Right ttlv
       it "3.1.1" $ do
         runIt requestMessage kmip_1_0__3_1_1_create_request
         runIt responseMessage kmip_1_0__3_1_1_create_response

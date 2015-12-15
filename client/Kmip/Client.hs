@@ -1,7 +1,7 @@
 module Kmip.Client where
 
 import           Ttlv.Data
-import           Ttlv.Parser
+import           Ttlv.Parser.Binary
 import qualified Ttlv.Tag             as T
 -- import           Ttlv.Validator.Message
 import           Ttlv.Validator.Objects

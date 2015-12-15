@@ -13,7 +13,8 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Ttlv.Parser
+  exposed-modules:     Ttlv.Parser.Binary
+                     , Ttlv.Parser.Serialize
                      , Ttlv.Enum
                      , Ttlv.Data
                      , Ttlv.Tag
@@ -42,6 +43,8 @@ library
                      , scotty >= 0.0
                      , text >= 0
                      , time >=1.5 && <1.6
+                     , attoparsec
+                     , cereal
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options: -Wall
@@ -74,6 +77,22 @@ test-suite test
                      , stitch
                      , wai
                      , hspec-wai >= 0.6.3
+
+executable bench
+  hs-source-dirs:      bench
+                     , tests
+  main-is:             Bench.hs
+  ghc-options:         -Wall
+  default-extensions:  DoAndIfThenElse
+  default-language:    Haskell2010
+  build-depends:       base
+                     , hs-kmip
+                     , criterion
+                     , text
+                     , bytestring
+                     , time
+                     , base16-bytestring
+                     , base64-bytestring
 
 executable server
   main-is:             Main.hs
