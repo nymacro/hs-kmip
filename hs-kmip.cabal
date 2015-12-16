@@ -96,6 +96,7 @@ executable bench
 
 executable server
   main-is:             Main.hs
+  ghc-options:         -Wall
   hs-source-dirs:      server
   other-modules:       Kmip.Server
   default-language:    Haskell2010

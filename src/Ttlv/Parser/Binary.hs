@@ -189,8 +189,13 @@ unparseTtlv (Ttlv t d) = do
 
 -- | Decode a Lazy ByteString into the corresponding Ttlv type
 decodeTtlv :: B.ByteString -> Either String Ttlv
--- FIXME does not handle the exception from runGet failing (due to catch requiring IO!)
-decodeTtlv b = Right $ runGet parseTtlv $ L.fromStrict b
+decodeTtlv = decodeTtlvLazy . L.fromStrict
+
+decodeTtlvLazy :: L.ByteString -> Either String Ttlv
+decodeTtlvLazy b = case runGetOrFail parseTtlv b of
+                     Right (_, _, ttlv) -> Right ttlv
+                     Left (_, _, e)     -> Left e
+
 
 encodeTtlv :: Ttlv -> B.ByteString
 encodeTtlv x = L.toStrict $ runPut $ unparseTtlv x

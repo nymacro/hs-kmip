@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 module Ttlv.Data ( TtlvData(..)
                  , Ttlv(..)
                  , Boxable(..)
@@ -14,20 +15,20 @@ import           Data.Time
 import           Data.Text
 
 -- | Tag data
-data TtlvData = TtlvStructure { ttlvStructure :: [Ttlv] }
-              | TtlvInt { ttlvInt :: Int }
-              | TtlvLongInt { ttlvLongInt :: Integer }
-              | TtlvBigInt { ttlvBigInt :: Integer }
-              | TtlvEnum { ttlvEnum :: Int }
-              | TtlvBool { ttlvBool :: Bool }
-              | TtlvString { ttlvString :: Text }
-              | TtlvByteString { ttlvByteString :: B.ByteString }
-              | TtlvDateTime { ttlvDateTime :: UTCTime }
-              | TtlvInterval { ttlvInterval :: Int }
+data TtlvData = TtlvStructure { ttlvStructure :: ![Ttlv] }
+              | TtlvInt { ttlvInt :: !Int }
+              | TtlvLongInt { ttlvLongInt :: !Integer }
+              | TtlvBigInt { ttlvBigInt :: !Integer }
+              | TtlvEnum { ttlvEnum :: !Int }
+              | TtlvBool { ttlvBool :: !Bool }
+              | TtlvString { ttlvString :: !Text }
+              | TtlvByteString { ttlvByteString :: !B.ByteString }
+              | TtlvDateTime { ttlvDateTime :: !UTCTime }
+              | TtlvInterval { ttlvInterval :: !Int }
               deriving (Show, Eq)
 
 -- | Data type representing Ttlv-encoding of KMIP message
-data Ttlv = Ttlv { getTtlvTag :: Tag, getTtlvData :: TtlvData }
+data Ttlv = Ttlv { getTtlvTag :: !Tag, getTtlvData :: !TtlvData }
           deriving (Show, Eq)
 
 class Boxable a where
