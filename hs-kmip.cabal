@@ -77,6 +77,8 @@ test-suite test
                      , stitch
                      , wai
                      , hspec-wai >= 0.6.3
+                     , checkers
+                     , QuickCheck
 
 executable bench
   hs-source-dirs:      bench

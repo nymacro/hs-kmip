@@ -225,7 +225,7 @@ data TtlvTag = ActivationDate
              | InitialCounterValue
              | InvocationFieldLength
              | AttestationCapableIndicator
-             deriving (Show, Eq, Enum)
+             deriving (Show, Eq, Enum, Bounded)
 
 data Tag' a = Tag TtlvTag
             | Extension a
@@ -246,7 +246,7 @@ toTtlvTag x = toEnum $ x - 0x420001
 
 toTag :: Int -> Tag
 toTag x | x >= 0x540000 && x <= 0x54FFFF = Extension x
-        | x >= 0x420001 && x <= 0x4200A1 = Tag $ toTtlvTag x
+        | x >= 0x420001 && x <= 0x4200D3 = Tag $ toTtlvTag x
         | otherwise = Unknown x
 
 fromTag :: Tag -> Int
