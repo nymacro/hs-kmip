@@ -2,7 +2,7 @@
 module Kmip10Spec where
 
 import           Ttlv.Data
-import           Ttlv.Parser.Serialize
+import           Ttlv.Parser.Binary
 import           Ttlv.Tag
 
 import           Test.Hspec

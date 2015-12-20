@@ -2,16 +2,20 @@
 module Ttlv.ParserSpec where
 
 import           Ttlv.Data
-import           Ttlv.Parser.Serialize
+import           Ttlv.Parser.Binary
 import qualified Ttlv.Tag               as T
 
 import           Test.Hspec
+import           Test.QuickCheck
 
 import qualified Data.ByteString        as B
 import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString.Lazy   as L
 import           Data.Maybe
 import           Data.Time
+import           Control.Monad (liftM)
+
+import           Kmip10Data
 
 fromHex :: B.ByteString -> L.ByteString
 fromHex x = L.fromChunks [fst $ B16.decode x]
@@ -44,42 +48,45 @@ ttlv t d = Ttlv (T.Tag t) d
 spec :: Spec
 spec = do
   describe "Ttlv" $ do
+    describe "Misc" $ do
+      it "should always pad to 8 bytes" $
+        property $ \x -> (x + padTo8 x) `rem` 8 == 0
     describe "Examples" $ do
       describe "Encode" $ do
         it "should encode/decode Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvInt 8)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Long Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvLongInt 123456789000000000)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Big Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvBigInt 1234567890000000000000000000)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
-        it "should encode/decode Big Integer" $ do
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
+        it "should encode/decode negative Big Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvBigInt (-1))
           pending
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Enumeration" $ do
           let t = ttlv T.CompromiseDate (TtlvEnum 255)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Boolean" $ do
           let t = ttlv T.CompromiseDate (TtlvBool True)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode String" $ do
           let t = ttlv T.CompromiseDate (TtlvString "Hello World")
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode ByteString" $ do
           let t = ttlv T.CompromiseDate (TtlvByteString $ fromHexStrict "010203")
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode DateTime" $ do
           let t = ttlv T.CompromiseDate (TtlvString "Hello World")
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Interval" $ do
           let t = ttlv T.CompromiseDate (TtlvInterval 864000)
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Structure" $ do
           let t = ttlv T.CompromiseDate (TtlvStructure [ttlv T.ApplicationSpecificInformation (TtlvEnum 254), ttlv T.ArchiveDate (TtlvInt 255)])
-          (decodeTtlv $ encodeTtlv t) `shouldBe` Right t
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
 
       describe "Decode" $ do
         it "should decode Integer" $ do
@@ -102,3 +109,9 @@ spec = do
           decodeTtlv (testTtlvs !! 8) `shouldBe` Right (ttlv T.CompromiseDate (TtlvInterval 864000))
         it "should decode Structure" $ do
           decodeTtlv (testTtlvs !! 9) `shouldBe` Right (ttlv T.CompromiseDate (TtlvStructure [ttlv T.ApplicationSpecificInformation (TtlvEnum 254), ttlv T.ArchiveDate (TtlvInt 255)]))
+
+      describe "Decode/Encode" $
+        let runTest x = it ("should decode encode " ++ fst x) $
+                          let decodeEncode b = liftM encodeTtlv (decodeTtlv b)
+                          in decodeEncode (snd x) `shouldBe` Right (snd x)
+        in mapM_ runTest kmip_1_0__all

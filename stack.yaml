@@ -3,4 +3,4 @@ packages:
 - '.'
 extra-deps:
 - stitch-0.3.2.0
-resolver: nightly-2015-12-10
+resolver: nightly-2015-12-19

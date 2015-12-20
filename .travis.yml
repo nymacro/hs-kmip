@@ -14,6 +14,7 @@ before_install:
 
 env:
 - ARGS=""
+- ARGS="--resolver lts-3"
 
 script:
 - stack $ARGS --no-terminal --install-ghc test

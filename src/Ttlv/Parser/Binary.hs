@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Ttlv.Parser.Binary ( encodeTtlv
                           , decodeTtlv
+                          , padTo
+                          , padTo8
                           ) where
 
 import           Control.Monad
@@ -24,6 +26,12 @@ import           Ttlv.Tag
 instance Binary Ttlv where
   get = parseTtlv
   put = unparseTtlv
+
+-- | calculate remaining bytes to specified alignment
+padTo :: (Integral a) => a -> a -> a
+padTo p n = (p - (n `rem` p)) `rem` p
+
+padTo8 = padTo 8
 
 parseTtlvStructure' :: Get [Ttlv]
 parseTtlvStructure' = do
@@ -99,14 +107,14 @@ encodeTtlvTag x = snd $ fromJust $ L.uncons $ encode (fromIntegral x :: Word32)
 parseTtlv :: Get Ttlv
 parseTtlv = do
   tag <- getLazyByteString 3
-  typ <- getWord8
+  typ <- fromIntegral <$> getWord8
   len <- getWord32be
   val <- getLazyByteString $ fromIntegral len
-  let skipBytes = (8 - (len `rem` 8)) `rem` 8 -- FIXME maybe??
-  when (skipBytes /= 0 && (fromIntegral typ `elem` [2, 5, 7, 8, 10])) $
+  let skipBytes = padTo8 $ fromIntegral len
+  when (skipBytes /= 0 && (typ `elem` [2, 5, 7, 8, 10])) $
     skip $ fromIntegral skipBytes
   return $ Ttlv (toTag $ decodeTtlvTag tag)
-    (case fromIntegral typ of
+    (case typ of
         1  -> runGet parseTtlvStructure val
         2  -> runGet parseTtlvInt val
         3  -> runGet parseTtlvLongInt val
@@ -169,9 +177,9 @@ paddedTtlvDataLength (TtlvInt _) = 8
 paddedTtlvDataLength (TtlvEnum _) = 8
 paddedTtlvDataLength (TtlvInterval _) = 8
 paddedTtlvDataLength x@(TtlvString _) = let n = ttlvDataLength x
-                                        in n + (8 - (n `rem` 8)) `rem` 8
+                                        in n + padTo8 n
 paddedTtlvDataLength x@(TtlvByteString _) = let n = ttlvDataLength x
-                                            in n + (8 - (n `rem` 8)) `rem` 8
+                                            in n + padTo8 n
 paddedTtlvDataLength x = ttlvDataLength x
 
 unparseTtlv :: Ttlv -> Put

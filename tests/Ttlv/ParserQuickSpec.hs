@@ -3,7 +3,7 @@
 module Ttlv.ParserQuickSpec where
 
 import           Ttlv.Data
-import           Ttlv.Parser.Serialize
+import           Ttlv.Parser.Binary
 import qualified Ttlv.Tag               as T
 
 import           Test.Hspec
