@@ -9,6 +9,9 @@ import           Ttlv.Validator.Structures hiding (tag)
 import           Ttlv.Validator.Types
 import           Ttlv.Enum
 
+import           Data.Int
+import           Data.Word
+
 import qualified Data.ByteString.Lazy as L
 
 data Attribute         = Attribute String TtlvData
@@ -28,7 +31,7 @@ templateAttributeToTtlv tag xs = Ttlv (T.Tag tag) (TtlvStructure (fmap attribute
 tag :: (Boxable a) => T.TtlvTag -> a -> Ttlv
 tag t x = Ttlv (T.Tag t) (box x)
 
-int :: T.TtlvTag -> Int -> Ttlv
+int :: T.TtlvTag -> Int32 -> Ttlv
 int tag = Ttlv (T.Tag tag) . TtlvInt
 
 batchCount = int T.BatchCount
@@ -54,7 +57,7 @@ defaultTemplate = []
 
 request :: [Ttlv] -> Ttlv
 request xs = requestMessage $ [ requestHeader [ protocol 1 0
-                                              , batchCount $ length xs
+                                              , batchCount $ fromIntegral $ length xs
                                               ] ] ++ xs
 
 create :: ObjectType -> TemplateAttribute -> Ttlv

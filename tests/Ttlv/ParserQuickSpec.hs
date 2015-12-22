@@ -21,7 +21,7 @@ import           Test.QuickCheck.Classes
 instance Arbitrary T.TtlvTag where
   arbitrary = arbitraryBoundedEnum
 
-instance Arbitrary (T.Tag' Int) where
+instance Arbitrary T.Tag where
   arbitrary = frequency [ (8, T.Tag <$> arbitrary)
                         , (1, T.Extension <$> choose (0x540000, 0x54FFFF))
                         , (1, T.Unknown <$> suchThat arbitrary (\x -> (x >= 0 && x <= 0x420000) ||
@@ -32,14 +32,14 @@ instance Arbitrary Ttlv where
 
 instance Arbitrary TtlvData where
   arbitrary = frequency [ (1, TtlvStructure <$> vector 10) -- limit to size 10 to prevent deep recursive generation
-                        , (2, TtlvInt <$> suchThat arbitrary (>= 0)) -- FIXME negative
-                        , (2, TtlvLongInt <$> suchThat arbitrary (>= 0)) -- FIXME negative
+                        , (2, TtlvInt <$> arbitrary) -- FIXME negative
+                        , (2, TtlvLongInt <$> arbitrary) -- FIXME negative
                         , (2, TtlvBigInt <$> suchThat arbitrary (> 0)) -- FIXME zero/negative
-                        , (2, TtlvEnum <$> suchThat arbitrary (>= 0))
+                        , (2, TtlvEnum <$> arbitrary)
                         , (2, TtlvBool <$> arbitrary)
                         , (2, TtlvString <$> return "qc")
                         , (2, TtlvByteString <$> return "qc")
-                        , (2, TtlvInterval <$> suchThat arbitrary (>= 0))]
+                        , (2, TtlvInterval <$> arbitrary)]
 
 spec :: Spec
 spec = do

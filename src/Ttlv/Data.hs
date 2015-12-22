@@ -13,18 +13,20 @@ import           Ttlv.Tag
 import qualified Data.ByteString as B
 import           Data.Time
 import           Data.Text
+import           Data.Int
+import           Data.Word
 
 -- | Tag data
 data TtlvData = TtlvStructure { ttlvStructure :: ![Ttlv] }
-              | TtlvInt { ttlvInt :: !Int }
-              | TtlvLongInt { ttlvLongInt :: !Integer }
+              | TtlvInt { ttlvInt :: !Int32 }
+              | TtlvLongInt { ttlvLongInt :: !Int64 }
               | TtlvBigInt { ttlvBigInt :: !Integer }
-              | TtlvEnum { ttlvEnum :: !Int }
+              | TtlvEnum { ttlvEnum :: !Word32 }
               | TtlvBool { ttlvBool :: !Bool }
               | TtlvString { ttlvString :: !Text }
               | TtlvByteString { ttlvByteString :: !B.ByteString }
               | TtlvDateTime { ttlvDateTime :: !UTCTime }
-              | TtlvInterval { ttlvInterval :: !Int }
+              | TtlvInterval { ttlvInterval :: !Word32 }
               deriving (Show, Eq)
 
 -- | Data type representing Ttlv-encoding of KMIP message
@@ -37,10 +39,16 @@ class Boxable a where
 class Unboxable a where
   unbox :: TtlvData -> Maybe a
 
-instance Boxable Int where
+instance Boxable Int32 where
   box = TtlvInt
-instance Unboxable Int where
+instance Unboxable Int32 where
   unbox (TtlvInt a) = Just a
+  unbox _ = Nothing
+
+instance Boxable Int where
+  box = TtlvInt . fromIntegral
+instance Unboxable Int where
+  unbox (TtlvInt a) = Just $ fromIntegral a
   unbox _ = Nothing
 
 instance Boxable Text where
@@ -55,9 +63,9 @@ instance Unboxable String where
   unbox (TtlvString a) = Just $ unpack a
   unbox _ = Nothing
 
-instance Boxable Integer where
+instance Boxable Int64 where
   box = TtlvLongInt
-instance Unboxable Integer where
+instance Unboxable Int64 where
   unbox (TtlvLongInt a) = Just a
   unbox _ = Nothing
 

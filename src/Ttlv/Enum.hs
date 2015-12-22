@@ -16,19 +16,20 @@ module Ttlv.Enum ( TtlvEnumType(..)
 
 import           Ttlv.Data
 import qualified Ttlv.Tag  as T
+import           Data.Word
 
 class Enum a => TtlvEnumType a where
-  toTtlvEnum :: Int -> a
-  toTtlvEnum = toEnum . pred
+  toTtlvEnum :: Word32 -> a
+  toTtlvEnum = toEnum . pred . fromIntegral
 
-  fromTtlvEnum :: a -> Int
-  fromTtlvEnum = succ . fromEnum
+  fromTtlvEnum :: a -> Word32
+  fromTtlvEnum = fromIntegral . succ . fromEnum
 
   toTtlvEnumType :: a -> TtlvData
-  toTtlvEnumType x = TtlvEnum $ fromTtlvEnum x
+  toTtlvEnumType x = TtlvEnum $ fromIntegral $ fromTtlvEnum x
 
   fromTtlvEnumType :: TtlvData -> Maybe a
-  fromTtlvEnumType (TtlvEnum x) = Just $ toTtlvEnum x
+  fromTtlvEnumType (TtlvEnum x) = Just $ toTtlvEnum $ fromIntegral x
   fromTtlvEnumType _ = Nothing
 
   ttlvEnumTag :: a -> T.TtlvTag

@@ -19,6 +19,10 @@ import           Data.Time.Clock.POSIX
 import           Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import qualified Data.Text                as T
 
+import           Data.Int
+import           Data.Word
+import           Unsafe.Coerce (unsafeCoerce)
+
 import           Ttlv.Data
 import qualified Ttlv.Enum                as E
 import           Ttlv.Tag

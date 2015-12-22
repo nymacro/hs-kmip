@@ -56,8 +56,14 @@ spec = do
         it "should encode/decode Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvInt 8)
           decodeTtlv (encodeTtlv t) `shouldBe` Right t
+        it "should encode/decode negative Integer" $ do
+          let t = ttlv T.CompromiseDate (TtlvInt $ -1)
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Long Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvLongInt 123456789000000000)
+          decodeTtlv (encodeTtlv t) `shouldBe` Right t
+        it "should encode/decode negative Long Integer" $ do
+          let t = ttlv T.CompromiseDate (TtlvLongInt $ -123456789000000000)
           decodeTtlv (encodeTtlv t) `shouldBe` Right t
         it "should encode/decode Big Integer" $ do
           let t = ttlv T.CompromiseDate (TtlvBigInt 1234567890000000000000000000)

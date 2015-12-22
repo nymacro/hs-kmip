@@ -9,7 +9,9 @@ import           Ttlv.Validator.Objects
 import           Ttlv.Validator.Structures
 import           Ttlv.Validator.Types
 
-requestOperationFor :: Int -> Maybe (TtlvParser Ttlv)
+import           Data.Word
+
+requestOperationFor :: Word32 -> Maybe (TtlvParser Ttlv)
 requestOperationFor t = case t of
   1  -> Just createRequest
   2  -> Just createKeyPairRequest
@@ -68,7 +70,7 @@ requestOperation = createRequest <|>
                    cancelRequest <|>
                    pollRequest
 
-responseOperationFor :: Int -> Maybe (TtlvParser Ttlv)
+responseOperationFor :: Word32 -> Maybe (TtlvParser Ttlv)
 responseOperationFor t = case t of
   1  -> Just createResponse
   2  -> Just createKeyPairResponse
