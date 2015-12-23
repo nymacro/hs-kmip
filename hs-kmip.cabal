@@ -28,7 +28,7 @@ library
   -- other-modules:       
   other-extensions:    OverloadedStrings
   build-depends:       HTTP >= 4000.0
-                     , base >=4.8 && <4.9
+                     , base >=4.7 && <4.9
                      , base16-bytestring >= 0.1.1.6
                      , base64-bytestring >= 1.0
                      , binary >=0.7 && <0.8
@@ -39,15 +39,14 @@ library
                      , hspec >= 1.11.4
                      , lens >= 0.0
                      , network-uri >= 2.6.0.2
-                     , old-locale >=1.0 && <1.1
                      , scotty >= 0.0
                      , text >= 0
-                     , time >=1.5 && <1.6
+                     , time >=1.4 && <1.6
                      , attoparsec
                      , cereal
   hs-source-dirs:      src
   default-language:    Haskell2010
-  ghc-options: -Wall
+  ghc-options:         -Wall
 
 test-suite test
   type:                exitcode-stdio-1.0
@@ -57,6 +56,7 @@ test-suite test
   main-is:             Main.hs
   ghc-options:         -Wall
   default-extensions:  DoAndIfThenElse
+                     , CPP
   default-language:    Haskell2010
   build-depends:       base
                      , hspec

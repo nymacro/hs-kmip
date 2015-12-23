@@ -6,6 +6,7 @@ module Ttlv.Parser.Binary ( encodeTtlv
                           ) where
 
 import           Control.Monad
+import           Control.Applicative
 import qualified Crypto.Number.Serialize  as CN (i2osp, i2ospOf_, lengthBytes,
                                                  os2ip)
 import           Data.Binary

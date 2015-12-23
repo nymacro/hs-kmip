@@ -14,6 +14,7 @@ import qualified Data.ByteString.Lazy   as L
 import           Data.Maybe
 import           Data.Time
 import qualified Data.Text              as Text (pack)
+import           Control.Applicative
 
 import           Test.QuickCheck
 import           Test.QuickCheck.Classes

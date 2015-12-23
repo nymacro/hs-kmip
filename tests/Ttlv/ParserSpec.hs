@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 module Ttlv.ParserSpec where
 
 import           Ttlv.Data
@@ -12,8 +13,15 @@ import qualified Data.ByteString        as B
 import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString.Lazy   as L
 import           Data.Maybe
-import           Data.Time
 import           Control.Monad (liftM)
+import           Data.Monoid
+
+#if MIN_VERSION_base(4,8,0)
+import           Data.Time
+#else
+import           Data.Time
+import           System.Locale
+#endif
 
 import           Kmip10Data
 

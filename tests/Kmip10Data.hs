@@ -4,6 +4,7 @@ module Kmip10Data where
 
 import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString        as B
+import           Data.Monoid
 
 fromHex :: B.ByteString -> B.ByteString
 fromHex x = mconcat [fst $ B16.decode x]
