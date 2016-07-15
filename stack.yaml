@@ -2,5 +2,5 @@ flags: {}
 packages:
 - '.'
 extra-deps:
-- stitch-0.3.2.0
-resolver: nightly-2015-12-19
+- stitch-0.3.3.0
+resolver: lts-6.7

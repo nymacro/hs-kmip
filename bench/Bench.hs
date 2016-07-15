@@ -1,11 +1,11 @@
 module Main where
 
-import Criterion.Main
-import Ttlv.Data
+import           Criterion.Main
+import           Data.ByteString
+import           Kmip10Data
+import           Ttlv.Data
+import qualified Ttlv.Parser.Binary    as BP
 import qualified Ttlv.Parser.Serialize as SP
-import qualified Ttlv.Parser.Binary as BP
-import Kmip10Data
-import Data.ByteString
 
 main :: IO ()
 main = defaultMain [ bgroup "cereal" [ bench "create" $ whnf SP.decodeTtlv kmip_1_0__3_1_1_create_request

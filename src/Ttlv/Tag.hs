@@ -9,7 +9,6 @@ module Ttlv.Tag ( TtlvVersion
                 , fromTag ) where
 
 data TtlvVersion = TtlvVersion Int Int deriving (Show, Eq)
--- ttlvTagVersion :: TtlvTag -> TtlvVersion
 
 -- | Tag identifier
 data TtlvTag = ActivationDate

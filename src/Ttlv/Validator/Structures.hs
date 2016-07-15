@@ -20,11 +20,11 @@ module Ttlv.Validator.Structures ( TtlvParser'(..)
                                  , nokIf
                                  ) where
 
-import           Control.Lens ((^?))
+import           Control.Lens        ((^?))
 import           Data.Either
 import           Ttlv.Data
-import           Ttlv.Tag
 import           Ttlv.Lens
+import           Ttlv.Tag
 
 import           Control.Applicative hiding (many, optional)
 

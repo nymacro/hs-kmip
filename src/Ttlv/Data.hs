@@ -1,8 +1,6 @@
 {-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE BangPatterns #-}
 module Ttlv.Data ( TtlvData(..)
                  , Ttlv(..)
                  , Boxable(..)
@@ -11,9 +9,9 @@ module Ttlv.Data ( TtlvData(..)
 import           Ttlv.Tag
 
 import qualified Data.ByteString as B
-import           Data.Time
-import           Data.Text
 import           Data.Int
+import           Data.Text
+import           Data.Time
 import           Data.Word
 
 -- | Tag data

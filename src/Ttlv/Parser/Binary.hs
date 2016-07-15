@@ -33,7 +33,7 @@ instance Binary Ttlv where
   put = unparseTtlv
 
 -- | calculate remaining bytes to specified alignment
-padTo :: (Integral a) => a -> a -> a
+padTo :: (Integral a, Num a) => a -> a -> a
 padTo p n = (p - (n `rem` p)) `rem` p
 
 padTo8 = padTo 8
@@ -208,7 +208,6 @@ decodeTtlvLazy :: L.ByteString -> Either String Ttlv
 decodeTtlvLazy b = case runGetOrFail parseTtlv b of
                      Right (_, _, ttlv) -> Right ttlv
                      Left (_, _, e)     -> Left e
-
 
 encodeTtlv :: Ttlv -> B.ByteString
 encodeTtlv x = L.toStrict $ runPut $ unparseTtlv x
